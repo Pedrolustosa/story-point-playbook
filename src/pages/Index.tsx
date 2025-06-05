@@ -2,7 +2,7 @@
 import React from 'react';
 import { GameProvider, useGame } from '../contexts/GameContext';
 import { HomePage } from '../components/HomePage';
-import { GameRoom } from '../components/GameRoom';
+import { GameRoom } from '../components/game/GameRoom';
 
 const AppContent: React.FC = () => {
   const { gameState } = useGame();

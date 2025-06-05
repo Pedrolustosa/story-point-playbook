@@ -3,9 +3,8 @@ import { httpClient } from './httpClient';
 
 export interface ChatMessage {
   id: string;
-  roomCode: string;
-  playerId: string;
-  playerName: string;
+  roomId: string;
+  user: string;
   message: string;
   timestamp: string;
 }

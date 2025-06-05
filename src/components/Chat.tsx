@@ -97,19 +97,19 @@ export const Chat: React.FC = () => {
             <div
               key={msg.id}
               className={`flex flex-col ${
-                msg.playerId === gameState.currentPlayer?.id ? 'items-end' : 'items-start'
+                msg.user === gameState.currentPlayer?.name ? 'items-end' : 'items-start'
               }`}
             >
               <div
                 className={`max-w-[80%] p-3 rounded-lg ${
-                  msg.playerId === gameState.currentPlayer?.id
+                  msg.user === gameState.currentPlayer?.name
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
-                {msg.playerId !== gameState.currentPlayer?.id && (
+                {msg.user !== gameState.currentPlayer?.name && (
                   <p className="text-xs font-medium mb-1 opacity-70">
-                    {msg.playerName}
+                    {msg.user}
                   </p>
                 )}
                 <p className="text-sm">{msg.message}</p>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Crown, CheckCircle, Clock } from 'lucide-react';
+import { Crown, CheckCircle, Clock, User } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
@@ -17,8 +17,15 @@ export const PlayersStatus: React.FC = () => {
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div className="flex items-center gap-3">
-              {player.isModerator && (
+              {player.isProductOwner ? (
+                <div className="flex items-center gap-1">
+                  <Crown className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs font-medium text-blue-600">PO</span>
+                </div>
+              ) : player.isModerator ? (
                 <Crown className="w-4 h-4 text-yellow-500" />
+              ) : (
+                <User className="w-4 h-4 text-gray-400" />
               )}
               <span className="font-medium text-gray-900">{player.name}</span>
               {player.id === gameState.currentPlayer?.id && (
@@ -29,7 +36,7 @@ export const PlayersStatus: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              {gameState.votingInProgress && (
+              {gameState.votingInProgress && !player.isProductOwner && (
                 player.hasVoted ? (
                   <div className="flex items-center gap-1 text-green-600">
                     <CheckCircle className="w-4 h-4" />
@@ -41,6 +48,13 @@ export const PlayersStatus: React.FC = () => {
                     <span className="text-sm font-medium">Votando...</span>
                   </div>
                 )
+              )}
+              
+              {gameState.votingInProgress && player.isProductOwner && (
+                <div className="flex items-center gap-1 text-blue-600">
+                  <Crown className="w-4 h-4" />
+                  <span className="text-sm font-medium">Product Owner</span>
+                </div>
               )}
               
               {gameState.votesRevealed && player.vote && (

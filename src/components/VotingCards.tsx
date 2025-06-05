@@ -6,7 +6,10 @@ export const VotingCards: React.FC = () => {
   const { gameState, castVote } = useGame();
   
   const currentPlayerVote = gameState.currentPlayer?.vote;
-  const canVote = gameState.votingInProgress && gameState.currentStory && !gameState.votesRevealed;
+  const canVote = gameState.votingInProgress && 
+                  gameState.currentStory && 
+                  !gameState.votesRevealed && 
+                  !gameState.currentPlayer?.isProductOwner;
 
   if (!gameState.currentStory) {
     return (
@@ -17,7 +20,21 @@ export const VotingCards: React.FC = () => {
           </div>
         </div>
         <h3 className="text-lg font-medium text-gray-500">Aguardando história</h3>
-        <p className="text-gray-400 mt-2">O moderador precisa selecionar uma história para começar a votação</p>
+        <p className="text-gray-400 mt-2">O Product Owner precisa selecionar uma história para começar a votação</p>
+      </div>
+    );
+  }
+
+  if (gameState.currentPlayer?.isProductOwner) {
+    return (
+      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+        <div className="text-blue-400 mb-4">
+          <div className="w-16 h-16 bg-blue-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
+            <span className="text-2xl">👑</span>
+          </div>
+        </div>
+        <h3 className="text-lg font-medium text-blue-600">Product Owner</h3>
+        <p className="text-gray-600 mt-2">Como PO, você não participa da votação, mas pode revelar os votos quando todos terminarem</p>
       </div>
     );
   }
@@ -31,7 +48,7 @@ export const VotingCards: React.FC = () => {
           </div>
         </div>
         <h3 className="text-lg font-medium text-gray-500">Votação encerrada</h3>
-        <p className="text-gray-400 mt-2">Aguardando o moderador revelar os votos</p>
+        <p className="text-gray-400 mt-2">Aguardando o Product Owner revelar os votos</p>
       </div>
     );
   }

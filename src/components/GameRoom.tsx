@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Copy, Users, Plus, Eye, RotateCcw, ArrowLeft } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
@@ -6,6 +7,7 @@ import { PlayersStatus } from './PlayersStatus';
 import { StoryPanel } from './StoryPanel';
 import { Results } from './Results';
 import { Chat } from './Chat';
+import { RevealCountdown } from './RevealCountdown';
 
 export const GameRoom: React.FC = () => {
   const { gameState, leaveRoom, addStory, setCurrentStory, revealVotes, resetVoting } = useGame();
@@ -33,8 +35,10 @@ export const GameRoom: React.FC = () => {
     }
   };
 
-  const allPlayersVoted = gameState.players.every(p => p.hasVoted);
-  const isModerator = gameState.currentPlayer?.isModerator;
+  // Apenas jogadores que não são PO podem votar
+  const votingPlayers = gameState.players.filter(p => !p.isProductOwner);
+  const allVotingPlayersVoted = votingPlayers.length > 0 && votingPlayers.every(p => p.hasVoted);
+  const isProductOwner = gameState.currentPlayer?.isProductOwner;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -71,7 +75,7 @@ export const GameRoom: React.FC = () => {
                 <span>{gameState.players.length} participante{gameState.players.length !== 1 ? 's' : ''}</span>
               </div>
               
-              {isModerator && (
+              {isProductOwner && (
                 <button
                   onClick={() => setShowAddStory(true)}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
@@ -98,7 +102,7 @@ export const GameRoom: React.FC = () => {
             {gameState.stories.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>Nenhuma história adicionada ainda.</p>
-                {isModerator && (
+                {isProductOwner && (
                   <button
                     onClick={() => setShowAddStory(true)}
                     className="mt-2 text-blue-600 hover:text-blue-700 font-medium"
@@ -117,7 +121,7 @@ export const GameRoom: React.FC = () => {
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
-                    onClick={() => isModerator && setCurrentStory(story.id)}
+                    onClick={() => isProductOwner && setCurrentStory(story.id)}
                   >
                     <h4 className="font-medium text-gray-900">{story.title}</h4>
                     {story.description && (
@@ -140,19 +144,24 @@ export const GameRoom: React.FC = () => {
           <div className="space-y-6">
             <VotingCards />
             
-            {/* Moderator Controls */}
-            {isModerator && gameState.currentStory && (
+            {/* Product Owner Controls */}
+            {isProductOwner && gameState.currentStory && (
               <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Controles</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Controles do Product Owner</h3>
                 <div className="space-y-3">
                   {!gameState.votesRevealed ? (
                     <button
                       onClick={revealVotes}
-                      disabled={!allPlayersVoted}
+                      disabled={!allVotingPlayersVoted || gameState.revealCountdown !== null}
                       className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                     >
                       <Eye className="w-4 h-4" />
-                      Revelar Votos {allPlayersVoted ? '' : `(${gameState.players.filter(p => p.hasVoted).length}/${gameState.players.length})`}
+                      {gameState.revealCountdown !== null 
+                        ? 'Revelando...' 
+                        : allVotingPlayersVoted 
+                          ? 'Revelar Votos' 
+                          : `Aguardando votos (${votingPlayers.filter(p => p.hasVoted).length}/${votingPlayers.length})`
+                      }
                     </button>
                   ) : (
                     <button
@@ -228,6 +237,9 @@ export const GameRoom: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Reveal Countdown Modal */}
+      <RevealCountdown />
 
       {/* Chat Component */}
       <Chat />

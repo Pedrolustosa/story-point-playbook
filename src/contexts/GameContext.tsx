@@ -5,6 +5,7 @@ export interface Player {
   id: string;
   name: string;
   isModerator: boolean;
+  isProductOwner: boolean;
   hasVoted: boolean;
   vote?: number | string;
 }
@@ -25,6 +26,7 @@ export interface GameState {
   stories: Story[];
   votingInProgress: boolean;
   votesRevealed: boolean;
+  revealCountdown: number | null;
   fibonacciCards: (number | string)[];
 }
 
@@ -53,6 +55,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     stories: [],
     votingInProgress: false,
     votesRevealed: false,
+    revealCountdown: null,
     fibonacciCards,
   });
 
@@ -66,6 +69,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: '1',
       name: playerName,
       isModerator: true,
+      isProductOwner: true,
       hasVoted: false,
     };
 
@@ -82,6 +86,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       id: Date.now().toString(),
       name: playerName,
       isModerator: false,
+      isProductOwner: false,
       hasVoted: false,
     };
 
@@ -114,13 +119,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         currentStory: story,
         votingInProgress: true,
         votesRevealed: false,
+        revealCountdown: null,
         players: prev.players.map(p => ({ ...p, hasVoted: false, vote: undefined })),
       }));
     }
   };
 
   const castVote = (vote: number | string) => {
-    if (!gameState.currentPlayer) return;
+    if (!gameState.currentPlayer || gameState.currentPlayer.isProductOwner) return;
 
     setGameState(prev => ({
       ...prev,
@@ -135,9 +141,33 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const revealVotes = () => {
     setGameState(prev => ({
       ...prev,
-      votesRevealed: true,
-      votingInProgress: false,
+      revealCountdown: 3,
     }));
+
+    // Iniciar countdown
+    const countdownInterval = setInterval(() => {
+      setGameState(prev => {
+        if (prev.revealCountdown === null) {
+          clearInterval(countdownInterval);
+          return prev;
+        }
+        
+        if (prev.revealCountdown <= 1) {
+          clearInterval(countdownInterval);
+          return {
+            ...prev,
+            votesRevealed: true,
+            votingInProgress: false,
+            revealCountdown: null,
+          };
+        }
+        
+        return {
+          ...prev,
+          revealCountdown: prev.revealCountdown - 1,
+        };
+      });
+    }, 1000);
   };
 
   const resetVoting = () => {
@@ -145,6 +175,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       ...prev,
       votingInProgress: true,
       votesRevealed: false,
+      revealCountdown: null,
       players: prev.players.map(p => ({ ...p, hasVoted: false, vote: undefined })),
     }));
   };
@@ -158,6 +189,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       stories: [],
       votingInProgress: false,
       votesRevealed: false,
+      revealCountdown: null,
       fibonacciCards,
     });
   };

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Users, Plus, ArrowRight } from 'lucide-react';
-import { useGame } from '../contexts/GameContext';
+import { useGame } from '../../contexts/GameContext';
 
 export const HomePage: React.FC = () => {
   const { createRoom, joinRoom } = useGame();

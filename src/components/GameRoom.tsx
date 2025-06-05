@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Copy, Users, Plus, Eye, RotateCcw, ArrowLeft } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
@@ -6,6 +5,7 @@ import { VotingCards } from './VotingCards';
 import { PlayersStatus } from './PlayersStatus';
 import { StoryPanel } from './StoryPanel';
 import { Results } from './Results';
+import { Chat } from './Chat';
 
 export const GameRoom: React.FC = () => {
   const { gameState, leaveRoom, addStory, setCurrentStory, revealVotes, resetVoting } = useGame();
@@ -228,6 +228,9 @@ export const GameRoom: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Chat Component */}
+      <Chat />
     </div>
   );
 };

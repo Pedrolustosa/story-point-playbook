@@ -2,20 +2,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle, X } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
-
-export interface ChatMessage {
-  id: string;
-  playerId: string;
-  playerName: string;
-  message: string;
-  timestamp: string;
-}
+import { useChat } from '../hooks/useChat';
 
 export const Chat: React.FC = () => {
   const { gameState } = useGame();
+  const { messages, isLoading, sendMessage, isSending, startPolling, stopPolling } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -26,18 +19,19 @@ export const Chat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Controlar polling baseado no estado do chat
+  useEffect(() => {
+    if (isOpen && gameState.roomCode) {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+  }, [isOpen, gameState.roomCode, startPolling, stopPolling]);
+
   const handleSendMessage = () => {
-    if (!message.trim() || !gameState.currentPlayer) return;
-
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      playerId: gameState.currentPlayer.id,
-      playerName: gameState.currentPlayer.name,
-      message: message.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
+    if (!message.trim() || !gameState.currentPlayer || isSending) return;
+    
+    sendMessage(message);
     setMessage('');
   };
 
@@ -54,6 +48,11 @@ export const Chat: React.FC = () => {
       minute: '2-digit',
     });
   };
+
+  // Não mostrar o chat se não estiver em uma sala
+  if (!gameState.roomCode || !gameState.currentPlayer) {
+    return null;
+  }
 
   if (!isOpen) {
     return (
@@ -84,7 +83,11 @@ export const Chat: React.FC = () => {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center text-gray-500 py-8">
+            <p>Carregando mensagens...</p>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <p>Nenhuma mensagem ainda.</p>
             <p className="text-sm">Comece a conversa!</p>
@@ -131,10 +134,11 @@ export const Chat: React.FC = () => {
             placeholder="Digite sua mensagem..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             maxLength={500}
+            disabled={isSending}
           />
           <button
             onClick={handleSendMessage}
-            disabled={!message.trim()}
+            disabled={!message.trim() || isSending}
             className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="w-4 h-4" />

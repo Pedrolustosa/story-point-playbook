@@ -1,7 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatService, ChatMessage, SendMessageDto } from '../services/api/chatService';
+import { ChatService, SendMessageDto } from '../services/api/chatService';
+import { ChatMessageDto } from '../services/api/types';
 import { useGame } from '../contexts/GameContext';
 
 export const useChat = () => {
@@ -14,7 +15,7 @@ export const useChat = () => {
     queryKey: ['chat-messages', gameState.roomCode],
     queryFn: () => ChatService.getMessages(gameState.roomCode),
     enabled: !!gameState.roomCode,
-    refetchInterval: isPolling ? 2000 : false, // Polling a cada 2 segundos
+    refetchInterval: isPolling ? 2000 : false,
     select: (response) => response.data,
   });
 
@@ -22,7 +23,6 @@ export const useChat = () => {
   const sendMessageMutation = useMutation({
     mutationFn: (data: SendMessageDto) => ChatService.sendMessage(gameState.roomCode, data),
     onSuccess: () => {
-      // Invalidar e refazer a query das mensagens
       queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomCode] });
     },
     onError: (error) => {

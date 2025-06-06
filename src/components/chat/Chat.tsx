@@ -93,9 +93,9 @@ export const Chat: React.FC = () => {
             <p className="text-sm">Comece a conversa!</p>
           </div>
         ) : (
-          messages.map((msg) => (
+          messages.map((msg, index) => (
             <div
-              key={msg.id}
+              key={index}
               className={`flex flex-col ${
                 msg.user === gameState.currentPlayer?.name ? 'items-end' : 'items-start'
               }`}

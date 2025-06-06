@@ -1,13 +1,6 @@
 
 import { httpClient } from './httpClient';
-
-export interface ChatMessage {
-  id: string;
-  roomId: string;
-  user: string;
-  message: string;
-  timestamp: string;
-}
+import { ChatMessageDto, GetChatHistoryQuery } from './types';
 
 export interface SendMessageDto {
   message: string;
@@ -16,11 +9,12 @@ export interface SendMessageDto {
 export class ChatService {
   private static readonly BASE_PATH = '/chat';
 
-  static async getMessages(roomCode: string) {
-    return httpClient.get<ChatMessage[]>(`/rooms/${roomCode}${this.BASE_PATH}`);
+  static async getMessages(roomId: string) {
+    const query: GetChatHistoryQuery = { roomId };
+    return httpClient.get<ChatMessageDto[]>(`/rooms/${roomId}${this.BASE_PATH}`, { params: query });
   }
 
   static async sendMessage(roomCode: string, data: SendMessageDto) {
-    return httpClient.post<ChatMessage>(`/rooms/${roomCode}${this.BASE_PATH}`, data);
+    return httpClient.post<ChatMessageDto>(`/rooms/${roomCode}${this.BASE_PATH}`, data);
   }
 }

@@ -1,5 +1,106 @@
 
 // DTOs que correspondem aos modelos da API .NET
+export interface CreateRoomCommand {
+  name: string;
+  scale: VotingScale;
+  timeLimit: number;
+  autoReveal: boolean;
+}
+
+export interface JoinRoomCommand {
+  roomCode: string;
+  displayName: string;
+  role: string;
+}
+
+export interface AddStoryCommand {
+  roomId: string;
+  title: string;
+  description: string;
+}
+
+export interface SubmitVoteCommand {
+  storyId: string;
+  userId: string;
+  value: string;
+}
+
+export interface RevealVotesCommand {
+  storyId: string;
+}
+
+export interface GetChatHistoryQuery {
+  roomId: string;
+}
+
+export interface GetRoomStatisticsQuery {
+  roomId: string;
+}
+
+export interface ExportRoomResultQuery {
+  roomId: string;
+}
+
+export interface ChatMessageDto {
+  user: string;
+  message: string;
+  timestamp: string;
+}
+
+export interface RoomDto {
+  id: string;
+  code: string;
+  name: string;
+}
+
+export interface StoryDto {
+  id: string;
+  title: string;
+  description: string;
+  roomId: string;
+}
+
+export interface UserDto {
+  id: string;
+  displayName: string;
+  role: string;
+  roomId: string;
+}
+
+export interface VoteEntryDto {
+  user: string;
+  value: string;
+}
+
+export interface ExportedStoryDto {
+  title: string;
+  description: string;
+  votes: VoteEntryDto[];
+  average: string;
+}
+
+export interface ExportResultDto {
+  roomName: string;
+  roomCode: string;
+  stories: ExportedStoryDto[];
+}
+
+export interface RoomStatisticsDto {
+  totalStories: number;
+  totalVotes: number;
+  distinctUsers: number;
+  avgVotesPerStory: number;
+  consensusRate: number;
+}
+
+export enum VotingScale {
+  Fibonacci = 0,
+  Modified = 1,
+  TShirt = 2,
+  Powers = 3
+}
+
+// Tipos antigos mantidos por compatibilidade - serão removidos gradualmente
 export interface CreateRoomDto {
   moderatorName: string;
 }
@@ -20,18 +121,6 @@ export interface CastVoteDto {
   vote: number | string;
 }
 
-export interface RoomDto {
-  id: string;
-  code: string;
-  isActive: boolean;
-  createdAt: string;
-  players: PlayerDto[];
-  stories: StoryDto[];
-  currentStoryId?: string;
-  votingInProgress: boolean;
-  votesRevealed: boolean;
-}
-
 export interface PlayerDto {
   id: string;
   name: string;
@@ -39,15 +128,6 @@ export interface PlayerDto {
   hasVoted: boolean;
   vote?: number | string;
   joinedAt: string;
-}
-
-export interface StoryDto {
-  id: string;
-  title: string;
-  description?: string;
-  estimate?: number;
-  isCompleted: boolean;
-  createdAt: string;
 }
 
 export interface VoteDto {

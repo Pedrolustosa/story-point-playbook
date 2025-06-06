@@ -11,30 +11,52 @@ export const useRoomOperations = (
 ) => {
   const fetchParticipants = useCallback(async (roomId: string) => {
     try {
+      console.log('Fetching participants for room:', roomId);
       const response = await ApiService.rooms.getParticipants(roomId);
       const users: UserDto[] = 'data' in response ? response.data : response;
       
-      console.log('Fetched participants:', users);
+      console.log('Fetched participants from API:', users);
+      
+      // Get room details to determine who is the moderator
+      const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode || roomId);
+      const room: RoomDto = 'data' in roomResponse ? roomResponse.data : roomResponse;
+      
+      console.log('Room details:', room);
       
       const players: Player[] = users.map(user => ({
         id: user.id,
         name: user.displayName,
-        isModerator: false, // será determinado baseado no criador da sala
+        // The user who created the room is the moderator
+        isModerator: room.createdBy?.id === user.id,
         isProductOwner: user.role === 'ProductOwner',
         hasVoted: false,
+        // Preserve vote if votes are revealed
+        vote: gameState.votesRevealed ? 
+          gameState.players.find(p => p.id === user.id)?.vote : 
+          undefined
       }));
       
-      setGameState(prev => ({
-        ...prev,
-        players
-      }));
+      console.log('Processed players with moderator status:', players);
+      
+      setGameState(prev => {
+        // Update current player if they're in the participants list
+        const updatedCurrentPlayer = prev.currentPlayer ? 
+          players.find(p => p.id === prev.currentPlayer!.id) || prev.currentPlayer :
+          prev.currentPlayer;
+          
+        return {
+          ...prev,
+          players,
+          currentPlayer: updatedCurrentPlayer
+        };
+      });
       
       return players;
     } catch (error) {
-      console.error('Erro ao buscar participantes:', error);
+      console.error('Error fetching participants:', error);
       return [];
     }
-  }, [setGameState]);
+  }, [setGameState, gameState.roomCode, gameState.votesRevealed, gameState.players]);
 
   const createRoom = useCallback(async (playerName: string) => {
     console.log('Creating room for player:', playerName);
@@ -54,7 +76,6 @@ export const useRoomOperations = (
       const response = await ApiService.rooms.createRoom(roomData);
 
       console.log('Room created successfully:', response);
-      console.log('Response data:', response);
       
       // Extract the actual room data from the response
       const room: RoomDto = 'data' in response ? response.data : response;
@@ -84,8 +105,13 @@ export const useRoomOperations = (
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));
+
+      // Fetch all participants after creating the room
+      console.log('Fetching participants after room creation');
+      setTimeout(() => fetchParticipants(room.id), 1000);
+      
     } catch (error) {
-      console.error('Erro ao criar sala:', error);
+      console.error('Error creating room:', error);
       console.log('Falling back to local mode due to API error');
       
       const roomCode = generateRoomCode();
@@ -105,17 +131,18 @@ export const useRoomOperations = (
         currentPlayer: newPlayer,
       }));
     }
-  }, [setGameState]);
+  }, [setGameState, fetchParticipants]);
 
   const joinRoom = useCallback(async (roomCode: string, playerName: string) => {
     try {
+      console.log('Joining room:', roomCode, 'as:', playerName);
+      
       const response = await ApiService.rooms.joinRoom(roomCode, {
         displayName: playerName,
         role: 'Developer',
       });
 
       console.log('Joined room successfully:', response);
-      console.log('Response data:', response);
 
       // Extract the actual user data from the response
       const user: UserDto = 'data' in response ? response.data : response;
@@ -126,17 +153,20 @@ export const useRoomOperations = (
         throw new Error('Invalid API response: missing user data');
       }
 
-      const newPlayer: Player = {
-        id: user.id,
-        name: user.displayName,
-        isModerator: false,
-        isProductOwner: false,
-        hasVoted: false,
-      };
-
       // Buscar informações da sala para obter o roomId
       const roomResponse = await ApiService.rooms.getRoom(roomCode);
       const room: RoomDto = 'data' in roomResponse ? roomResponse.data : roomResponse;
+
+      console.log('Room info after joining:', room);
+
+      const newPlayer: Player = {
+        id: user.id,
+        name: user.displayName,
+        // Determine if this user is the moderator based on room creator
+        isModerator: room.createdBy?.id === user.id,
+        isProductOwner: user.role === 'ProductOwner',
+        hasVoted: false,
+      };
 
       setGameState(prev => ({
         ...prev,
@@ -145,11 +175,12 @@ export const useRoomOperations = (
         currentPlayer: newPlayer,
       }));
 
-      // Buscar todos os participantes da sala após entrar
+      // Fetch all participants after joining the room
+      console.log('Fetching participants after joining room');
       await fetchParticipants(room.id);
       
     } catch (error) {
-      console.error('Erro ao entrar na sala:', error);
+      console.error('Error joining room:', error);
       const newPlayer: Player = {
         id: Date.now().toString(),
         name: playerName,

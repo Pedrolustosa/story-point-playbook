@@ -1,5 +1,4 @@
-
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto, UserDto } from '../services/api/types';
 import { Player, GameState } from '../types/game';
@@ -9,6 +8,8 @@ export const useRoomOperations = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+
   const fetchParticipants = useCallback(async (roomId: string) => {
     try {
       console.log('Fetching participants for room:', roomId);
@@ -61,6 +62,8 @@ export const useRoomOperations = (
   const createRoom = useCallback(async (playerName: string) => {
     console.log('Creating room for player:', playerName);
     console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
+    
+    setIsCreatingRoom(true);
     
     try {
       const roomData = {
@@ -130,6 +133,8 @@ export const useRoomOperations = (
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));
+    } finally {
+      setIsCreatingRoom(false);
     }
   }, [setGameState, fetchParticipants]);
 
@@ -214,5 +219,5 @@ export const useRoomOperations = (
     }));
   }, [setGameState]);
 
-  return { createRoom, joinRoom, leaveRoom, fetchParticipants };
+  return { createRoom, joinRoom, leaveRoom, fetchParticipants, isCreatingRoom };
 };

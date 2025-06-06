@@ -6,15 +6,19 @@ import { createInitialGameState } from '../utils/gameUtils';
 import { useRoomOperations } from '../hooks/useRoomOperations';
 import { useStoryOperations } from '../hooks/useStoryOperations';
 import { useVotingOperations } from '../hooks/useVotingOperations';
+import { useParticipantNotifications } from '../hooks/useParticipantNotifications';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>(createInitialGameState());
 
-  const { createRoom, joinRoom, leaveRoom, fetchParticipants } = useRoomOperations(gameState, setGameState);
+  const { createRoom, joinRoom, leaveRoom, fetchParticipants, isCreatingRoom } = useRoomOperations(gameState, setGameState);
   const { addStory, setCurrentStory } = useStoryOperations(gameState, setGameState);
   const { castVote, revealVotes, resetVoting } = useVotingOperations(gameState, setGameState);
+
+  // Use participant notifications hook
+  useParticipantNotifications(gameState.players, gameState.currentPlayer);
 
   return (
     <GameContext.Provider
@@ -29,6 +33,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         resetVoting,
         leaveRoom,
         fetchParticipants,
+        isCreatingRoom,
       }}
     >
       {children}

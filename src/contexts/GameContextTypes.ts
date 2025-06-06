@@ -12,4 +12,5 @@ export interface GameContextType {
   resetVoting: () => void;
   leaveRoom: () => void;
   fetchParticipants: (roomId: string) => Promise<any[]>;
+  isCreatingRoom: boolean;
 }

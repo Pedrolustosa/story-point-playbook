@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import { Users, Plus, ArrowRight } from 'lucide-react';
+import { Users, Plus, ArrowRight, Loader2 } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const HomePage: React.FC = () => {
-  const { createRoom, joinRoom } = useGame();
+  const { createRoom, joinRoom, isCreatingRoom } = useGame();
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [mode, setMode] = useState<'create' | 'join' | null>(null);
@@ -69,6 +69,7 @@ export const HomePage: React.FC = () => {
                     placeholder="Digite seu nome"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     maxLength={30}
+                    disabled={isCreatingRoom}
                   />
                 </div>
               </div>
@@ -76,16 +77,24 @@ export const HomePage: React.FC = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => setMode(null)}
-                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  disabled={isCreatingRoom}
+                  className="flex-1 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Voltar
                 </button>
                 <button
                   onClick={handleCreateRoom}
-                  disabled={!playerName.trim()}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  disabled={!playerName.trim() || isCreatingRoom}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                 >
-                  Criar Sala
+                  {isCreatingRoom ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Criando...
+                    </>
+                  ) : (
+                    'Criar Sala'
+                  )}
                 </button>
               </div>
             </div>

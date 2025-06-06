@@ -16,11 +16,9 @@ export interface ApiError {
 
 class HttpClient {
   private baseURL: string;
-  private timeout: number;
 
   constructor() {
     this.baseURL = ENV.API_BASE_URL;
-    this.timeout = ENV.API_TIMEOUT;
   }
 
   private async request<T>(
@@ -38,21 +36,9 @@ class HttpClient {
     };
 
     console.log(`Making ${config.method || 'GET'} request to:`, url);
-    console.log(`Request timeout set to: ${this.timeout}ms`);
 
     try {
-      // Create a timeout promise that rejects after the specified time
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error(`Request timeout after ${this.timeout}ms`));
-        }, this.timeout);
-      });
-
-      // Create the actual fetch promise
-      const fetchPromise = fetch(url, config);
-
-      // Race between fetch and timeout
-      const response = await Promise.race([fetchPromise, timeoutPromise]);
+      const response = await fetch(url, config);
 
       console.log('Response status:', response.status);
 
@@ -74,13 +60,6 @@ class HttpClient {
   private handleError(error: any): ApiError {
     console.log('Error details:', error);
     
-    if (error.message.includes('Request timeout')) {
-      return {
-        message: 'Request timeout - The server took too long to respond. Please check if the API server is running and accessible.',
-        status: 408,
-      };
-    }
-
     if (error instanceof TypeError && error.message.includes('fetch')) {
       return {
         message: 'Network error - Unable to connect to server. Please check if the API is running and the URL is correct.',

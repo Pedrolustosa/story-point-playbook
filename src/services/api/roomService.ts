@@ -9,8 +9,8 @@ export class RoomService {
     return httpClient.post<RoomDto>(`${this.BASE_PATH}`, data);
   }
 
-  static async joinRoom(data: JoinRoomCommand) {
-    return httpClient.post<UserDto>(`${this.BASE_PATH}/join`, data);
+  static async joinRoom(roomCode: string, data: Omit<JoinRoomCommand, 'roomCode'>) {
+    return httpClient.post<UserDto>(`${this.BASE_PATH}/${roomCode}/join`, data);
   }
 
   static async getRoom(roomCode: string) {

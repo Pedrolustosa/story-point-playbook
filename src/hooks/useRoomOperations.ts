@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto, UserDto } from '../services/api/types';
@@ -82,8 +81,7 @@ export const useRoomOperations = (
 
   const joinRoom = useCallback(async (roomCode: string, playerName: string) => {
     try {
-      const response = await ApiService.rooms.joinRoom({
-        roomCode,
+      const response = await ApiService.rooms.joinRoom(roomCode, {
         displayName: playerName,
         role: 'Developer',
       });

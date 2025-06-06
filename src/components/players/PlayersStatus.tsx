@@ -1,14 +1,32 @@
 
 import React from 'react';
-import { Crown, CheckCircle, Clock, User } from 'lucide-react';
+import { Crown, CheckCircle, Clock, User, RefreshCw } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
-  const { gameState } = useGame();
+  const { gameState, fetchParticipants } = useGame();
+
+  const handleRefreshParticipants = async () => {
+    if (gameState.roomId) {
+      console.log('Refreshing participants for room:', gameState.roomId);
+      await fetchParticipants(gameState.roomId);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Participantes</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Participantes ({gameState.players.length})</h3>
+        {gameState.roomId && (
+          <button
+            onClick={handleRefreshParticipants}
+            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            title="Atualizar lista de participantes"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        )}
+      </div>
       
       <div className="space-y-3">
         {gameState.players.map((player) => (

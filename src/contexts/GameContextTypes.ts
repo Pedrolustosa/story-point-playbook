@@ -11,4 +11,5 @@ export interface GameContextType {
   revealVotes: () => Promise<void>;
   resetVoting: () => void;
   leaveRoom: () => void;
+  fetchParticipants: (roomId: string) => Promise<any[]>;
 }

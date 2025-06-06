@@ -12,7 +12,7 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>(createInitialGameState());
 
-  const { createRoom, joinRoom, leaveRoom } = useRoomOperations(gameState, setGameState);
+  const { createRoom, joinRoom, leaveRoom, fetchParticipants } = useRoomOperations(gameState, setGameState);
   const { addStory, setCurrentStory } = useStoryOperations(gameState, setGameState);
   const { castVote, revealVotes, resetVoting } = useVotingOperations(gameState, setGameState);
 
@@ -28,6 +28,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         revealVotes,
         resetVoting,
         leaveRoom,
+        fetchParticipants,
       }}
     >
       {children}

@@ -1,3 +1,4 @@
+
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto, UserDto } from '../services/api/types';
@@ -8,6 +9,33 @@ export const useRoomOperations = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
+  const fetchParticipants = useCallback(async (roomId: string) => {
+    try {
+      const response = await ApiService.rooms.getParticipants(roomId);
+      const users: UserDto[] = 'data' in response ? response.data : response;
+      
+      console.log('Fetched participants:', users);
+      
+      const players: Player[] = users.map(user => ({
+        id: user.id,
+        name: user.displayName,
+        isModerator: false, // será determinado baseado no criador da sala
+        isProductOwner: user.role === 'ProductOwner',
+        hasVoted: false,
+      }));
+      
+      setGameState(prev => ({
+        ...prev,
+        players
+      }));
+      
+      return players;
+    } catch (error) {
+      console.error('Erro ao buscar participantes:', error);
+      return [];
+    }
+  }, [setGameState]);
+
   const createRoom = useCallback(async (playerName: string) => {
     console.log('Creating room for player:', playerName);
     console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
@@ -106,13 +134,20 @@ export const useRoomOperations = (
         hasVoted: false,
       };
 
+      // Buscar informações da sala para obter o roomId
+      const roomResponse = await ApiService.rooms.getRoom(roomCode);
+      const room: RoomDto = 'data' in roomResponse ? roomResponse.data : roomResponse;
+
       setGameState(prev => ({
         ...prev,
         roomCode,
-        roomId: user.roomId,
-        players: [...prev.players, newPlayer],
+        roomId: room.id,
         currentPlayer: newPlayer,
       }));
+
+      // Buscar todos os participantes da sala após entrar
+      await fetchParticipants(room.id);
+      
     } catch (error) {
       console.error('Erro ao entrar na sala:', error);
       const newPlayer: Player = {
@@ -131,7 +166,7 @@ export const useRoomOperations = (
         currentPlayer: newPlayer,
       }));
     }
-  }, [setGameState]);
+  }, [setGameState, fetchParticipants]);
 
   const leaveRoom = useCallback(() => {
     setGameState(prev => ({
@@ -148,5 +183,5 @@ export const useRoomOperations = (
     }));
   }, [setGameState]);
 
-  return { createRoom, joinRoom, leaveRoom };
+  return { createRoom, joinRoom, leaveRoom, fetchParticipants };
 };

@@ -1,4 +1,5 @@
 
+
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { UserDto } from '../services/api/types';
@@ -24,10 +25,10 @@ export const useFetchParticipants = (
         // Find existing user to preserve their state
         const existingUser = currentUsers.find(u => u.id === userData.id);
         
-        // Use displayName from the API response (UserDto has displayName, not name)
-        const userName = userData.displayName || existingUser?.name || 'Usuário sem nome';
+        // Use name from the API response (using name property)
+        const userName = (userData as any).name || existingUser?.name || 'Usuário sem nome';
         
-        console.log(`Processing user ${userData.id}: API displayName="${userData.displayName}", existing name="${existingUser?.name}", final name="${userName}"`);
+        console.log(`Processing user ${userData.id}: API name="${(userData as any).name}", existing name="${existingUser?.name}", final name="${userName}"`);
         
         return {
           id: userData.id,
@@ -67,3 +68,4 @@ export const useFetchParticipants = (
 
   return { fetchParticipants };
 };
+

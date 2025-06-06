@@ -24,9 +24,14 @@ export const useFetchParticipants = (
         // Find existing user to preserve their state
         const existingUser = currentUsers.find(u => u.id === userData.id);
         
+        // Ensure we always have a valid name
+        const userName = userData.displayName || existingUser?.name || 'Usuário sem nome';
+        
+        console.log(`Processing user ${userData.id}: API name="${userData.displayName}", existing name="${existingUser?.name}", final name="${userName}"`);
+        
         return {
           id: userData.id,
-          name: userData.displayName,
+          name: userName,
           isModerator: userData.role === 'Moderator' || existingUser?.isModerator || false,
           isProductOwner: userData.role === 'ProductOwner',
           hasVoted: gameState.votesRevealed ? false : (existingUser?.hasVoted || false),
@@ -34,7 +39,7 @@ export const useFetchParticipants = (
         };
       });
       
-      console.log('Processed users:', users);
+      console.log('Processed users with names:', users.map(u => ({ id: u.id, name: u.name })));
       console.log('Current user ID:', currentUserId);
       
       setGameState(prev => {

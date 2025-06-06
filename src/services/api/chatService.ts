@@ -7,13 +7,11 @@ export interface SendMessageDto {
 }
 
 export class ChatService {
-  private static readonly BASE_PATH = '/chat';
-
   static async getMessages(roomId: string) {
-    return httpClient.get<ChatMessageDto[]>(`/rooms/${roomId}${this.BASE_PATH}`);
+    return httpClient.get<ChatMessageDto[]>(`/rooms/${roomId}/chat`);
   }
 
-  static async sendMessage(roomCode: string, data: SendMessageDto) {
-    return httpClient.post<ChatMessageDto>(`/rooms/${roomCode}${this.BASE_PATH}`, data);
+  static async sendMessage(roomId: string, data: SendMessageDto) {
+    return httpClient.post<ChatMessageDto>(`/rooms/${roomId}/chat`, data);
   }
 }

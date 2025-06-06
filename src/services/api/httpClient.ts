@@ -48,9 +48,30 @@ class HttpClient {
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
-      const data = await response.json();
-      console.log('Response data:', data);
-      return data;
+      // Check if response has content
+      const responseText = await response.text();
+      console.log('Raw response text:', responseText);
+      
+      // Handle empty response
+      if (!responseText) {
+        console.log('Empty response received');
+        return {
+          data: null as T,
+          success: true,
+          message: 'Request completed successfully'
+        };
+      }
+
+      // Try to parse JSON
+      try {
+        const data = JSON.parse(responseText);
+        console.log('Parsed response data:', data);
+        return data;
+      } catch (parseError) {
+        console.error('Failed to parse JSON response:', parseError);
+        console.error('Response text that failed to parse:', responseText);
+        throw new Error(`Invalid JSON response: ${parseError.message}`);
+      }
     } catch (error) {
       console.error('API request failed:', error);
       throw this.handleError(error);

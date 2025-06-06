@@ -37,25 +37,22 @@ class HttpClient {
       },
     };
 
+    console.log(`Making ${config.method || 'GET'} request to:`, url);
+    console.log(`Request timeout set to: ${this.timeout}ms`);
+
     try {
-      const controller = new AbortController();
-      
-      // Set a more conservative timeout and add better error handling
-      const timeoutId = setTimeout(() => {
-        console.log(`Request timeout after ${this.timeout}ms, aborting...`);
-        controller.abort();
-      }, this.timeout);
-
-      console.log(`Making ${config.method || 'GET'} request to:`, url);
-      console.log(`Request timeout set to: ${this.timeout}ms`);
-
-      const response = await fetch(url, {
-        ...config,
-        signal: controller.signal,
+      // Create a timeout promise that rejects after the specified time
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error(`Request timeout after ${this.timeout}ms`));
+        }, this.timeout);
       });
 
-      // Clear timeout on successful response
-      clearTimeout(timeoutId);
+      // Create the actual fetch promise
+      const fetchPromise = fetch(url, config);
+
+      // Race between fetch and timeout
+      const response = await Promise.race([fetchPromise, timeoutPromise]);
 
       console.log('Response status:', response.status);
 
@@ -77,7 +74,7 @@ class HttpClient {
   private handleError(error: any): ApiError {
     console.log('Error details:', error);
     
-    if (error.name === 'AbortError') {
+    if (error.message.includes('Request timeout')) {
       return {
         message: 'Request timeout - The server took too long to respond. Please check if the API server is running and accessible.',
         status: 408,

@@ -1,7 +1,7 @@
 
 export const ENV = {
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://localhost:7039/api',
-  API_TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT || '15000'), // Reduced to 15 seconds for better UX
+  API_TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'), // Increased to 30 seconds
 } as const;
 
 // Validação das variáveis de ambiente obrigatórias

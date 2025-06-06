@@ -25,22 +25,6 @@ export interface SubmitVoteCommand {
   value: string;
 }
 
-export interface RevealVotesCommand {
-  storyId: string;
-}
-
-export interface GetChatHistoryQuery {
-  roomId: string;
-}
-
-export interface GetRoomStatisticsQuery {
-  roomId: string;
-}
-
-export interface ExportRoomResultQuery {
-  roomId: string;
-}
-
 export interface ChatMessageDto {
   user: string;
   message: string;
@@ -70,27 +54,6 @@ export interface UserDto {
 export interface VoteEntryDto {
   user: string;
   value: string;
-}
-
-export interface ExportedStoryDto {
-  title: string;
-  description: string;
-  votes: VoteEntryDto[];
-  average: string;
-}
-
-export interface ExportResultDto {
-  roomName: string;
-  roomCode: string;
-  stories: ExportedStoryDto[];
-}
-
-export interface RoomStatisticsDto {
-  totalStories: number;
-  totalVotes: number;
-  distinctUsers: number;
-  avgVotesPerStory: number;
-  consensusRate: number;
 }
 
 export enum VotingScale {

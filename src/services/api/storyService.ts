@@ -1,6 +1,6 @@
 
 import { httpClient } from './httpClient';
-import { AddStoryCommand, StoryDto, SubmitVoteCommand, RevealVotesCommand } from './types';
+import { AddStoryCommand, StoryDto, SubmitVoteCommand } from './types';
 
 export class StoryService {
   static async createStory(roomId: string, data: Omit<AddStoryCommand, 'roomId'>) {

@@ -1,6 +1,6 @@
 
 import { httpClient } from './httpClient';
-import { CreateRoomCommand, JoinRoomCommand, RoomDto, UserDto, RoomStatisticsDto, ExportResultDto } from './types';
+import { CreateRoomCommand, JoinRoomCommand, RoomDto, UserDto } from './types';
 
 export class RoomService {
   private static readonly BASE_PATH = '/rooms';
@@ -15,14 +15,6 @@ export class RoomService {
 
   static async getRoom(roomCode: string) {
     return httpClient.get<RoomDto>(`${this.BASE_PATH}/${roomCode}`);
-  }
-
-  static async getRoomStatistics(roomId: string) {
-    return httpClient.get<RoomStatisticsDto>(`${this.BASE_PATH}/${roomId}/statistics`);
-  }
-
-  static async exportRoomResults(roomId: string) {
-    return httpClient.get<ExportResultDto>(`${this.BASE_PATH}/${roomId}/export`);
   }
 
   static async leaveRoom(roomCode: string, userId: string) {

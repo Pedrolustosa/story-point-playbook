@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { User } from '../types/game';
 
 export const useParticipantNotifications = (users: User[], currentUser: User | null) => {
@@ -23,10 +23,15 @@ export const useParticipantNotifications = (users: User[], currentUser: User | n
 
     // Show toast for each new user
     newUsers.forEach(user => {
-      toast({
-        title: "Novo participante!",
-        description: `${user.name} entrou na sala`,
-        duration: 3000,
+      toast.success(`${user.name} entrou na sala!`, {
+        description: user.isModerator ? 'Product Owner entrou na equipe' : 'Novo membro da equipe',
+        duration: 4000,
+        className: 'bg-green-50 border-green-200',
+        style: {
+          backgroundColor: '#f0fdf4',
+          borderColor: '#bbf7d0',
+          color: '#166534'
+        }
       });
     });
 

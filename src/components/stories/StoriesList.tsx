@@ -12,7 +12,17 @@ export const StoriesList: React.FC<StoriesListProps> = ({ onAddStory }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Histórias</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Histórias</h3>
+        {isProductOwner && (
+          <button
+            onClick={onAddStory}
+            className="bg-blue-600 text-white px-3 py-1 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+          >
+            + Nova História
+          </button>
+        )}
+      </div>
       
       {gameState.stories.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
@@ -31,11 +41,11 @@ export const StoriesList: React.FC<StoriesListProps> = ({ onAddStory }) => {
           {gameState.stories.map((story) => (
             <div
               key={story.id}
-              className={`p-4 rounded-lg border cursor-pointer transition-all ${
+              className={`p-4 rounded-lg border transition-all ${
                 gameState.currentStory?.id === story.id
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
+              } ${isProductOwner ? 'cursor-pointer' : ''}`}
               onClick={() => isProductOwner && setCurrentStory(story.id)}
             >
               <h4 className="font-medium text-gray-900">{story.title}</h4>

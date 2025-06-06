@@ -1,13 +1,8 @@
 
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
+import { UserDto } from '../services/api/types';
 import { User, GameState } from '../types/game';
-
-interface ApiUserResponse {
-  id: string;
-  name: string;
-  role: string;
-}
 
 export const useFetchParticipants = (
   gameState: GameState,
@@ -17,7 +12,7 @@ export const useFetchParticipants = (
     try {
       console.log('Fetching participants for room:', roomId);
       const response = await ApiService.rooms.getParticipants(roomId);
-      const usersData: ApiUserResponse[] = 'data' in response ? response.data : response;
+      const usersData: UserDto[] = 'data' in response ? response.data : response;
       
       console.log('Fetched participants from API:', usersData);
       
@@ -29,10 +24,10 @@ export const useFetchParticipants = (
         // Find existing user to preserve their state
         const existingUser = currentUsers.find(u => u.id === userData.id);
         
-        // Use the name directly from the API response
-        const userName = userData.name || existingUser?.name || 'Usuário sem nome';
+        // Use displayName from the API response (UserDto has displayName, not name)
+        const userName = userData.displayName || existingUser?.name || 'Usuário sem nome';
         
-        console.log(`Processing user ${userData.id}: API name="${userData.name}", existing name="${existingUser?.name}", final name="${userName}"`);
+        console.log(`Processing user ${userData.id}: API displayName="${userData.displayName}", existing name="${existingUser?.name}", final name="${userName}"`);
         
         return {
           id: userData.id,

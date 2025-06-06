@@ -39,19 +39,22 @@ class HttpClient {
 
     try {
       const controller = new AbortController();
-      // Aumentar timeout para 30 segundos para evitar aborts prematuros
+      
+      // Set a more conservative timeout and add better error handling
       const timeoutId = setTimeout(() => {
-        console.log('Request timeout, aborting...');
+        console.log(`Request timeout after ${this.timeout}ms, aborting...`);
         controller.abort();
-      }, 30000);
+      }, this.timeout);
 
       console.log(`Making ${config.method || 'GET'} request to:`, url);
+      console.log(`Request timeout set to: ${this.timeout}ms`);
 
       const response = await fetch(url, {
         ...config,
         signal: controller.signal,
       });
 
+      // Clear timeout on successful response
       clearTimeout(timeoutId);
 
       console.log('Response status:', response.status);
@@ -72,16 +75,18 @@ class HttpClient {
   }
 
   private handleError(error: any): ApiError {
+    console.log('Error details:', error);
+    
     if (error.name === 'AbortError') {
       return {
-        message: 'Request timeout - The server took too long to respond',
+        message: 'Request timeout - The server took too long to respond. Please check if the API server is running and accessible.',
         status: 408,
       };
     }
 
     if (error instanceof TypeError && error.message.includes('fetch')) {
       return {
-        message: 'Network error - Unable to connect to server. Please check if the API is running.',
+        message: 'Network error - Unable to connect to server. Please check if the API is running and the URL is correct.',
         status: 0,
       };
     }

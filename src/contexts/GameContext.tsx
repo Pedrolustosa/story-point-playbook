@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale } from '../services/api/types';
@@ -68,14 +67,21 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const createRoom = async (playerName: string) => {
+    console.log('Creating room for player:', playerName);
+    console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
+    
     try {
-      const response = await ApiService.rooms.createRoom({
+      const roomData = {
         name: `Sala de ${playerName}`,
         createdBy: playerName,
         scale: VotingScale.Fibonacci,
         timeLimit: 0,
         autoReveal: false,
-      });
+      };
+      
+      console.log('Sending room creation request with data:', roomData);
+      
+      const response = await ApiService.rooms.createRoom(roomData);
 
       console.log('Room created successfully:', response.data);
       
@@ -99,6 +105,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }));
     } catch (error) {
       console.error('Erro ao criar sala:', error);
+      console.log('Falling back to local mode due to API error');
+      
       // Fallback para modo local
       const roomCode = generateRoomCode();
       const newPlayer: Player = {

@@ -64,15 +64,13 @@ export const PlayersStatus: React.FC = () => {
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div className="flex items-center gap-3">
-              {player.isProductOwner ? (
+              {player.isModerator ? (
                 <div className="flex items-center gap-1">
                   <Crown className="w-5 h-5 text-yellow-500" />
                   <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
                     Product Owner
                   </span>
                 </div>
-              ) : player.isModerator ? (
-                <Crown className="w-4 h-4 text-blue-500" />
               ) : (
                 <User className="w-4 h-4 text-gray-400" />
               )}
@@ -85,7 +83,7 @@ export const PlayersStatus: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              {gameState.votingInProgress && !player.isProductOwner && (
+              {gameState.votingInProgress && !player.isModerator && (
                 player.hasVoted ? (
                   <div className="flex items-center gap-1 text-green-600">
                     <CheckCircle className="w-4 h-4" />
@@ -99,7 +97,7 @@ export const PlayersStatus: React.FC = () => {
                 )
               )}
               
-              {gameState.votingInProgress && player.isProductOwner && (
+              {gameState.votingInProgress && player.isModerator && (
                 <div className="flex items-center gap-1 text-yellow-600">
                   <Crown className="w-4 h-4" />
                   <span className="text-sm font-medium">Product Owner</span>

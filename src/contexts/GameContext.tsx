@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale } from '../services/api/types';
@@ -87,7 +88,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       const room = response.data;
       
-      // Handle different API response structures
+      // Handle different API response structures with proper null checks
       const newPlayer: Player = {
         id: room.createdBy?.id || '1',
         name: room.createdBy?.displayName || playerName,

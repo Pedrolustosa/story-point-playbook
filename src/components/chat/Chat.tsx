@@ -52,11 +52,22 @@ export const Chat: React.FC = () => {
   };
 
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    // Se o timestamp já está no formato HH:MM:SS, usar diretamente
+    if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) {
+      return timestamp;
+    }
+    // Caso contrário, tentar fazer parse como Date
+    try {
+      return new Date(timestamp).toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return timestamp;
+    }
   };
+
+  console.log('Chat component rendering with messages:', messages);
 
   // Não mostrar o chat se não estiver em uma sala ou se não estiver no modo API
   if (!gameState.roomId || !gameState.currentUser || !isApiMode) {
@@ -101,38 +112,43 @@ export const Chat: React.FC = () => {
           <div className="text-center text-gray-500 py-8">
             <p>Carregando mensagens...</p>
           </div>
-        ) : messages.length === 0 ? (
+        ) : !messages || messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <p>Nenhuma mensagem ainda.</p>
             <p className="text-sm">Comece a conversa!</p>
           </div>
         ) : (
-          messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex flex-col ${
-                msg.user === gameState.currentUser?.name ? 'items-end' : 'items-start'
-              }`}
-            >
+          messages.map((msg, index) => {
+            console.log('Rendering message:', msg, 'index:', index);
+            const isCurrentUser = msg.user === gameState.currentUser?.name || msg.user === gameState.currentUser?.id;
+            
+            return (
               <div
-                className={`max-w-[80%] p-3 rounded-lg ${
-                  msg.user === gameState.currentUser?.name
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                key={`${msg.user}-${msg.timestamp}-${index}`}
+                className={`flex flex-col ${
+                  isCurrentUser ? 'items-end' : 'items-start'
                 }`}
               >
-                {msg.user !== gameState.currentUser?.name && (
-                  <p className="text-xs font-medium mb-1 opacity-70">
-                    {msg.user}
-                  </p>
-                )}
-                <p className="text-sm">{msg.message}</p>
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    isCurrentUser
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  {!isCurrentUser && (
+                    <p className="text-xs font-medium mb-1 opacity-70">
+                      {msg.user}
+                    </p>
+                  )}
+                  <p className="text-sm">{msg.message}</p>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">
+                  {formatTime(msg.timestamp)}
+                </span>
               </div>
-              <span className="text-xs text-gray-500 mt-1">
-                {formatTime(msg.timestamp)}
-              </span>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

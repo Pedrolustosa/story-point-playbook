@@ -29,8 +29,8 @@ export const useRoomOperations = (
       console.log('Room created successfully:', response);
       console.log('Response data:', response);
       
-      // Trabalhar diretamente com a resposta da API
-      const room = response.data || response;
+      // Extract the actual room data from the response
+      const room: RoomDto = 'data' in response ? response.data : response;
       
       console.log('Processed room data:', room);
       
@@ -91,8 +91,8 @@ export const useRoomOperations = (
       console.log('Joined room successfully:', response);
       console.log('Response data:', response);
 
-      // Trabalhar diretamente com a resposta da API
-      const user = response.data || response;
+      // Extract the actual user data from the response
+      const user: UserDto = 'data' in response ? response.data : response;
       
       console.log('Processed user data:', user);
       

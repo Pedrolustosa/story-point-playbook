@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatService, SendMessageDto } from '../services/api/chatService';
+import { ChatService, SendMessageRequest } from '../services/api/chatService';
 import { ChatMessageDto } from '../services/api/types';
 import { useGame } from '../contexts/GameContext';
 
@@ -27,8 +27,9 @@ export const useChat = () => {
 
   // Mutation para enviar mensagem - só funciona no modo API
   const sendMessageMutation = useMutation({
-    mutationFn: (data: SendMessageDto) => {
+    mutationFn: (data: SendMessageRequest) => {
       console.log('Sending message to roomId:', gameState.roomId);
+      console.log('Message data:', data);
       if (!isApiMode) {
         throw new Error('Chat API not available in local mode');
       }
@@ -52,7 +53,12 @@ export const useChat = () => {
       return;
     }
     
-    sendMessageMutation.mutate({ message: message.trim() });
+    const messageData: SendMessageRequest = {
+      UserName: gameState.currentUser.name,
+      Message: message.trim()
+    };
+    
+    sendMessageMutation.mutate(messageData);
   }, [sendMessageMutation, gameState.currentUser, isApiMode]);
 
   const startPolling = () => setIsPolling(true);
@@ -65,6 +71,6 @@ export const useChat = () => {
     isSending: sendMessageMutation.isPending,
     startPolling,
     stopPolling,
-    isApiMode, // Adicionar flag para verificar se o chat está disponível
+    isApiMode,
   };
 };

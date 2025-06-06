@@ -29,7 +29,16 @@ export const Chat: React.FC = () => {
   }, [isOpen, gameState.roomId, isApiMode, startPolling, stopPolling]);
 
   const handleSendMessage = () => {
-    if (!message.trim() || !gameState.currentUser || isSending || !isApiMode) return;
+    console.log('handleSendMessage called');
+    console.log('Message:', message);
+    console.log('Current user:', gameState.currentUser);
+    console.log('Is API mode:', isApiMode);
+    console.log('Is sending:', isSending);
+    
+    if (!message.trim() || !gameState.currentUser || isSending || !isApiMode) {
+      console.log('Cannot send message - validation failed');
+      return;
+    }
     
     sendMessage(message);
     setMessage('');
@@ -51,6 +60,11 @@ export const Chat: React.FC = () => {
 
   // Não mostrar o chat se não estiver em uma sala ou se não estiver no modo API
   if (!gameState.roomId || !gameState.currentUser || !isApiMode) {
+    console.log('Chat hidden - missing requirements:', {
+      roomId: gameState.roomId,
+      currentUser: gameState.currentUser,
+      isApiMode
+    });
     return null;
   }
 

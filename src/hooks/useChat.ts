@@ -29,7 +29,7 @@ export const useChat = () => {
   const sendMessageMutation = useMutation({
     mutationFn: (data: SendMessageRequest) => {
       console.log('Sending message to roomId:', gameState.roomId);
-      console.log('Message data:', data);
+      console.log('Message data being sent:', data);
       if (!isApiMode) {
         throw new Error('Chat API not available in local mode');
       }
@@ -46,18 +46,25 @@ export const useChat = () => {
   });
 
   const sendMessage = useCallback((message: string) => {
-    if (!message.trim() || !gameState.currentUser) return;
+    if (!message.trim() || !gameState.currentUser) {
+      console.log('Cannot send message: missing message or user');
+      return;
+    }
     
     if (!isApiMode) {
       console.log('Chat not available in local mode');
       return;
     }
     
+    console.log('Current user:', gameState.currentUser);
+    console.log('User name:', gameState.currentUser.name);
+    
     const messageData: SendMessageRequest = {
       UserName: gameState.currentUser.name,
       Message: message.trim()
     };
     
+    console.log('Prepared message data:', messageData);
     sendMessageMutation.mutate(messageData);
   }, [sendMessageMutation, gameState.currentUser, isApiMode]);
 

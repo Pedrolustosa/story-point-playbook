@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
-import { RoomDto, UserDto } from '../services/api/types';
+import { UserDto } from '../services/api/types';
 import { Player, GameState } from '../types/game';
 
 export const useFetchParticipants = (
@@ -16,26 +16,11 @@ export const useFetchParticipants = (
       
       console.log('Fetched participants from API:', users);
       
-      // Only try to get room details if we have a roomCode and it's different from roomId
-      let room: RoomDto | null = null;
-      if (gameState.roomCode && gameState.roomCode !== roomId) {
-        try {
-          console.log('Fetching room details using roomCode:', gameState.roomCode);
-          const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode);
-          room = 'data' in roomResponse ? roomResponse.data : roomResponse;
-          console.log('Room details:', room);
-        } catch (error) {
-          console.warn('Failed to fetch room details, continuing without moderator info:', error);
-        }
-      } else {
-        console.log('Skipping room details fetch - using roomId for participants only');
-      }
-      
       const players: Player[] = users.map(user => ({
         id: user.id,
         name: user.displayName,
-        // The user who created the room is the moderator (only if we have room details)
-        isModerator: room ? room.createdBy?.id === user.id : false,
+        // For now, we'll determine moderator status based on existing game state
+        isModerator: gameState.players.find(p => p.id === user.id)?.isModerator || false,
         isProductOwner: user.role === 'ProductOwner',
         hasVoted: false,
         // Preserve vote if votes are revealed
@@ -44,7 +29,7 @@ export const useFetchParticipants = (
           undefined
       }));
       
-      console.log('Processed players with moderator status:', players);
+      console.log('Processed players:', players);
       
       setGameState(prev => {
         // Update current player if they're in the participants list
@@ -64,7 +49,7 @@ export const useFetchParticipants = (
       console.error('Error fetching participants:', error);
       return [];
     }
-  }, [setGameState, gameState.roomCode, gameState.votesRevealed, gameState.players]);
+  }, [setGameState, gameState.votesRevealed, gameState.players]);
 
   return { fetchParticipants };
 };

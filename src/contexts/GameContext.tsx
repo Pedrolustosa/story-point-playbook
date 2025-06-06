@@ -1,5 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { ApiService } from '../services/api';
+import { VotingScale } from '../services/api/types';
 
 export interface Player {
   id: string;
@@ -20,6 +22,7 @@ export interface Story {
 
 export interface GameState {
   roomCode: string;
+  roomId: string;
   players: Player[];
   currentPlayer: Player | null;
   currentStory: Story | null;
@@ -32,12 +35,12 @@ export interface GameState {
 
 interface GameContextType {
   gameState: GameState;
-  createRoom: (playerName: string) => void;
-  joinRoom: (roomCode: string, playerName: string) => void;
-  addStory: (story: Omit<Story, 'id' | 'isCompleted'>) => void;
-  setCurrentStory: (storyId: string) => void;
-  castVote: (vote: number | string) => void;
-  revealVotes: () => void;
+  createRoom: (playerName: string) => Promise<void>;
+  joinRoom: (roomCode: string, playerName: string) => Promise<void>;
+  addStory: (story: Omit<Story, 'id' | 'isCompleted'>) => Promise<void>;
+  setCurrentStory: (storyId: string) => Promise<void>;
+  castVote: (vote: number | string) => Promise<void>;
+  revealVotes: () => Promise<void>;
   resetVoting: () => void;
   leaveRoom: () => void;
 }
@@ -49,6 +52,7 @@ const fibonacciCards = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?', '☕'];
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>({
     roomCode: '',
+    roomId: '',
     players: [],
     currentPlayer: null,
     currentStory: null,
@@ -63,55 +67,143 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return Math.random().toString(36).substr(2, 6).toUpperCase();
   };
 
-  const createRoom = (playerName: string) => {
-    const roomCode = generateRoomCode();
-    const newPlayer: Player = {
-      id: '1',
-      name: playerName,
-      isModerator: true,
-      isProductOwner: true,
-      hasVoted: false,
-    };
+  const createRoom = async (playerName: string) => {
+    try {
+      const response = await ApiService.rooms.createRoom({
+        name: `Sala de ${playerName}`,
+        scale: VotingScale.Fibonacci,
+        timeLimit: 0,
+        autoReveal: false,
+      });
 
-    setGameState(prev => ({
-      ...prev,
-      roomCode,
-      players: [newPlayer],
-      currentPlayer: newPlayer,
-    }));
+      const room = response.data;
+      const newPlayer: Player = {
+        id: '1',
+        name: playerName,
+        isModerator: true,
+        isProductOwner: true,
+        hasVoted: false,
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        roomCode: room.code,
+        roomId: room.id,
+        players: [newPlayer],
+        currentPlayer: newPlayer,
+      }));
+    } catch (error) {
+      console.error('Erro ao criar sala:', error);
+      // Fallback para modo local
+      const roomCode = generateRoomCode();
+      const newPlayer: Player = {
+        id: '1',
+        name: playerName,
+        isModerator: true,
+        isProductOwner: true,
+        hasVoted: false,
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        roomCode,
+        roomId: roomCode,
+        players: [newPlayer],
+        currentPlayer: newPlayer,
+      }));
+    }
   };
 
-  const joinRoom = (roomCode: string, playerName: string) => {
-    const newPlayer: Player = {
-      id: Date.now().toString(),
-      name: playerName,
-      isModerator: false,
-      isProductOwner: false,
-      hasVoted: false,
-    };
+  const joinRoom = async (roomCode: string, playerName: string) => {
+    try {
+      const response = await ApiService.rooms.joinRoom({
+        roomCode,
+        displayName: playerName,
+        role: 'Developer',
+      });
 
-    setGameState(prev => ({
-      ...prev,
-      roomCode,
-      players: [...prev.players, newPlayer],
-      currentPlayer: newPlayer,
-    }));
+      const user = response.data;
+      const newPlayer: Player = {
+        id: user.id,
+        name: user.displayName,
+        isModerator: false,
+        isProductOwner: false,
+        hasVoted: false,
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        roomCode,
+        roomId: user.roomId,
+        players: [...prev.players, newPlayer],
+        currentPlayer: newPlayer,
+      }));
+    } catch (error) {
+      console.error('Erro ao entrar na sala:', error);
+      // Fallback para modo local
+      const newPlayer: Player = {
+        id: Date.now().toString(),
+        name: playerName,
+        isModerator: false,
+        isProductOwner: false,
+        hasVoted: false,
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        roomCode,
+        roomId: roomCode,
+        players: [...prev.players, newPlayer],
+        currentPlayer: newPlayer,
+      }));
+    }
   };
 
-  const addStory = (story: Omit<Story, 'id' | 'isCompleted'>) => {
-    const newStory: Story = {
-      ...story,
-      id: Date.now().toString(),
-      isCompleted: false,
-    };
+  const addStory = async (story: Omit<Story, 'id' | 'isCompleted'>) => {
+    try {
+      if (gameState.roomId) {
+        const response = await ApiService.stories.createStory(gameState.roomId, {
+          title: story.title,
+          description: story.description,
+        });
 
-    setGameState(prev => ({
-      ...prev,
-      stories: [...prev.stories, newStory],
-    }));
+        const newStory: Story = {
+          id: response.data.id,
+          title: response.data.title,
+          description: response.data.description,
+          isCompleted: false,
+        };
+
+        setGameState(prev => ({
+          ...prev,
+          stories: [...prev.stories, newStory],
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao criar história:', error);
+      // Fallback para modo local
+      const newStory: Story = {
+        ...story,
+        id: Date.now().toString(),
+        isCompleted: false,
+      };
+
+      setGameState(prev => ({
+        ...prev,
+        stories: [...prev.stories, newStory],
+      }));
+    }
   };
 
-  const setCurrentStory = (storyId: string) => {
+  const setCurrentStory = async (storyId: string) => {
+    try {
+      if (gameState.roomCode) {
+        await ApiService.stories.setCurrentStory(gameState.roomCode, storyId);
+      }
+    } catch (error) {
+      console.error('Erro ao definir história atual:', error);
+    }
+
     const story = gameState.stories.find(s => s.id === storyId);
     if (story) {
       setGameState(prev => ({
@@ -125,8 +217,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const castVote = (vote: number | string) => {
-    if (!gameState.currentPlayer || gameState.currentPlayer.isProductOwner) return;
+  const castVote = async (vote: number | string) => {
+    if (!gameState.currentPlayer || gameState.currentPlayer.isProductOwner || !gameState.currentStory) return;
+
+    try {
+      await ApiService.stories.submitVote({
+        storyId: gameState.currentStory.id,
+        userId: gameState.currentPlayer.id,
+        value: vote.toString(),
+      });
+    } catch (error) {
+      console.error('Erro ao enviar voto:', error);
+    }
 
     setGameState(prev => ({
       ...prev,
@@ -138,7 +240,15 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
-  const revealVotes = () => {
+  const revealVotes = async () => {
+    try {
+      if (gameState.currentStory) {
+        await ApiService.stories.revealVotes(gameState.currentStory.id);
+      }
+    } catch (error) {
+      console.error('Erro ao revelar votos:', error);
+    }
+
     setGameState(prev => ({
       ...prev,
       revealCountdown: 3,
@@ -183,6 +293,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const leaveRoom = () => {
     setGameState({
       roomCode: '',
+      roomId: '',
       players: [],
       currentPlayer: null,
       currentStory: null,

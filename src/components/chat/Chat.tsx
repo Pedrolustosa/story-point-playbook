@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle, X } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
@@ -21,12 +20,12 @@ export const Chat: React.FC = () => {
 
   // Controlar polling baseado no estado do chat
   useEffect(() => {
-    if (isOpen && gameState.roomCode) {
+    if (isOpen && gameState.roomId) {
       startPolling();
     } else {
       stopPolling();
     }
-  }, [isOpen, gameState.roomCode, startPolling, stopPolling]);
+  }, [isOpen, gameState.roomId, startPolling, stopPolling]);
 
   const handleSendMessage = () => {
     if (!message.trim() || !gameState.currentPlayer || isSending) return;
@@ -50,7 +49,7 @@ export const Chat: React.FC = () => {
   };
 
   // Não mostrar o chat se não estiver em uma sala
-  if (!gameState.roomCode || !gameState.currentPlayer) {
+  if (!gameState.roomId || !gameState.currentPlayer) {
     return null;
   }
 

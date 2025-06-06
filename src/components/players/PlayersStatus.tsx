@@ -66,11 +66,13 @@ export const PlayersStatus: React.FC = () => {
             <div className="flex items-center gap-3">
               {player.isProductOwner ? (
                 <div className="flex items-center gap-1">
-                  <Crown className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-medium text-blue-600">PO</span>
+                  <Crown className="w-5 h-5 text-yellow-500" />
+                  <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
+                    Product Owner
+                  </span>
                 </div>
               ) : player.isModerator ? (
-                <Crown className="w-4 h-4 text-yellow-500" />
+                <Crown className="w-4 h-4 text-blue-500" />
               ) : (
                 <User className="w-4 h-4 text-gray-400" />
               )}
@@ -98,7 +100,7 @@ export const PlayersStatus: React.FC = () => {
               )}
               
               {gameState.votingInProgress && player.isProductOwner && (
-                <div className="flex items-center gap-1 text-blue-600">
+                <div className="flex items-center gap-1 text-yellow-600">
                   <Crown className="w-4 h-4" />
                   <span className="text-sm font-medium">Product Owner</span>
                 </div>

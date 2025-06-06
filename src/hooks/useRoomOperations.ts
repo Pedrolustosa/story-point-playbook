@@ -2,7 +2,6 @@
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto, UserDto } from '../services/api/types';
-import { ApiResponse } from '../services/api/httpClient';
 import { Player, GameState } from '../types/game';
 import { generateRoomCode } from '../utils/gameUtils';
 
@@ -25,13 +24,15 @@ export const useRoomOperations = (
       
       console.log('Sending room creation request with data:', roomData);
       
-      const response: ApiResponse<RoomDto> = await ApiService.rooms.createRoom(roomData);
+      const response = await ApiService.rooms.createRoom(roomData);
 
       console.log('Room created successfully:', response);
-      console.log('Response data:', response.data);
+      console.log('Response data:', response);
       
-      // Extract the actual room data from the response
-      const room = response.data;
+      // Trabalhar diretamente com a resposta da API
+      const room = response.data || response;
+      
+      console.log('Processed room data:', room);
       
       if (!room || !room.id) {
         console.error('API response is invalid:', room);
@@ -81,16 +82,19 @@ export const useRoomOperations = (
 
   const joinRoom = useCallback(async (roomCode: string, playerName: string) => {
     try {
-      const response: ApiResponse<UserDto> = await ApiService.rooms.joinRoom({
+      const response = await ApiService.rooms.joinRoom({
         roomCode,
         displayName: playerName,
         role: 'Developer',
       });
 
-      console.log('Joined room successfully:', response.data);
+      console.log('Joined room successfully:', response);
+      console.log('Response data:', response);
 
-      // Extract the actual user data from the response
-      const user = response.data;
+      // Trabalhar diretamente com a resposta da API
+      const user = response.data || response;
+      
+      console.log('Processed user data:', user);
       
       if (!user || !user.id) {
         throw new Error('Invalid API response: missing user data');

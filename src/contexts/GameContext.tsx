@@ -71,15 +71,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await ApiService.rooms.createRoom({
         name: `Sala de ${playerName}`,
+        createdBy: playerName, // Adicionar o campo obrigatório
         scale: VotingScale.Fibonacci,
         timeLimit: 0,
         autoReveal: false,
       });
 
+      console.log('Room created successfully:', response.data);
+      
       const room = response.data;
       const newPlayer: Player = {
-        id: '1',
-        name: playerName,
+        id: room.createdBy.id, // Usar o ID retornado pela API
+        name: room.createdBy.name,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
@@ -88,7 +91,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setGameState(prev => ({
         ...prev,
         roomCode: room.code,
-        roomId: room.id,
+        roomId: room.id, // Usar o ID real da sala, não o código
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));
@@ -121,6 +124,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         displayName: playerName,
         role: 'Developer',
       });
+
+      console.log('Joined room successfully:', response.data);
 
       const user = response.data;
       const newPlayer: Player = {

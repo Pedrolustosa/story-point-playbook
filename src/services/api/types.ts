@@ -2,6 +2,7 @@
 // DTOs que correspondem aos modelos da API .NET
 export interface CreateRoomCommand {
   name: string;
+  createdBy: string; // Campo obrigatório que estava faltando
   scale: VotingScale;
   timeLimit: number;
   autoReveal: boolean;

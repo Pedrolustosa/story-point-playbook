@@ -57,16 +57,6 @@ export const PlayersStatus: React.FC = () => {
         </div>
       )}
 
-      {/* Debug Info */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-4 p-2 bg-gray-50 border rounded text-xs">
-          <div>Room ID: {gameState.roomId}</div>
-          <div>Room Code: {gameState.roomCode}</div>
-          <div>SignalR Connected: {isSignalRConnected ? 'Yes' : 'No'}</div>
-          <div>API URL: {import.meta.env.VITE_API_BASE_URL}</div>
-        </div>
-      )}
-      
       <div className="space-y-3">
         {gameState.players.map((player) => (
           <div

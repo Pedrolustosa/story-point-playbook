@@ -22,7 +22,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useParticipantNotifications(gameState.players, gameState.currentPlayer);
 
   // Use SignalR for real-time updates
-  const { connection, isConnected } = useSignalR(gameState, fetchParticipants);
+  const { connection, isConnected, connectionError } = useSignalR(gameState, fetchParticipants);
 
   return (
     <GameContext.Provider
@@ -40,6 +40,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isCreatingRoom,
         signalRConnection: connection,
         isSignalRConnected: isConnected,
+        connectionError,
       }}
     >
       {children}

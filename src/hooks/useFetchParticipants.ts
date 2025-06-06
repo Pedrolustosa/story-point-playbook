@@ -16,18 +16,22 @@ export const useFetchParticipants = (
       
       console.log('Fetched participants from API:', users);
       
-      const players: Player[] = users.map(user => ({
-        id: user.id,
-        name: user.displayName,
-        // For now, we'll determine moderator status based on existing game state
-        isModerator: gameState.players.find(p => p.id === user.id)?.isModerator || false,
-        isProductOwner: user.role === 'ProductOwner',
-        hasVoted: false,
-        // Preserve vote if votes are revealed
-        vote: gameState.votesRevealed ? 
-          gameState.players.find(p => p.id === user.id)?.vote : 
-          undefined
-      }));
+      // Get current players to preserve voting state and moderator status
+      const currentPlayers = gameState.players;
+      
+      const players: Player[] = users.map(user => {
+        // Find existing player to preserve their state
+        const existingPlayer = currentPlayers.find(p => p.id === user.id);
+        
+        return {
+          id: user.id,
+          name: user.displayName,
+          isModerator: existingPlayer?.isModerator || false,
+          isProductOwner: user.role === 'ProductOwner',
+          hasVoted: gameState.votesRevealed ? false : (existingPlayer?.hasVoted || false),
+          vote: gameState.votesRevealed ? undefined : existingPlayer?.vote
+        };
+      });
       
       console.log('Processed players:', players);
       
@@ -37,6 +41,7 @@ export const useFetchParticipants = (
           players.find(p => p.id === prev.currentPlayer!.id) || prev.currentPlayer :
           prev.currentPlayer;
           
+        console.log('Updating game state with new players list');
         return {
           ...prev,
           players,
@@ -49,7 +54,7 @@ export const useFetchParticipants = (
       console.error('Error fetching participants:', error);
       return [];
     }
-  }, [setGameState, gameState.votesRevealed, gameState.players]);
+  }, [setGameState]);
 
   return { fetchParticipants };
 };

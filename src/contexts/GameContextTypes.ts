@@ -16,4 +16,5 @@ export interface GameContextType {
   isCreatingRoom: boolean;
   signalRConnection: HubConnection | null;
   isSignalRConnected: boolean;
+  connectionError?: string | null;
 }

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Crown, CheckCircle, Clock, User, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { Crown, CheckCircle, Clock, User, RefreshCw, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
@@ -12,6 +12,10 @@ export const PlayersStatus: React.FC = () => {
       await fetchParticipants(gameState.roomId);
     }
   };
+
+  // Get connection error from SignalR hook if available
+  const signalRHook = useGame();
+  const connectionError = (signalRHook as any).connectionError;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
@@ -40,6 +44,28 @@ export const PlayersStatus: React.FC = () => {
           </button>
         )}
       </div>
+
+      {/* Connection Error Warning */}
+      {connectionError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span className="text-sm text-red-800">
+              Erro de conexão: {connectionError}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Debug Info */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-4 p-2 bg-gray-50 border rounded text-xs">
+          <div>Room ID: {gameState.roomId}</div>
+          <div>Room Code: {gameState.roomCode}</div>
+          <div>SignalR Connected: {isSignalRConnected ? 'Yes' : 'No'}</div>
+          <div>API URL: {import.meta.env.VITE_API_BASE_URL}</div>
+        </div>
+      )}
       
       <div className="space-y-3">
         {gameState.players.map((player) => (

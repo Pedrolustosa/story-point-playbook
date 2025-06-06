@@ -158,17 +158,15 @@ export const useRoomOperations = (
         throw new Error('Invalid API response: missing user data');
       }
 
-      // Buscar informações da sala para obter o roomId
-      const roomResponse = await ApiService.rooms.getRoom(roomCode);
-      const room: RoomDto = 'data' in roomResponse ? roomResponse.data : roomResponse;
+      // Use roomId from the user response instead of making another API call
+      const roomId = user.roomId;
+      console.log('Using roomId from join response:', roomId);
 
-      console.log('Room info after joining:', room);
-
+      // Create the new player without knowing moderator status yet
       const newPlayer: Player = {
         id: user.id,
         name: user.displayName,
-        // Determine if this user is the moderator based on room creator
-        isModerator: room.createdBy?.id === user.id,
+        isModerator: false, // Will be updated when fetching participants
         isProductOwner: user.role === 'ProductOwner',
         hasVoted: false,
       };
@@ -176,13 +174,13 @@ export const useRoomOperations = (
       setGameState(prev => ({
         ...prev,
         roomCode,
-        roomId: room.id,
+        roomId: roomId,
         currentPlayer: newPlayer,
       }));
 
-      // Fetch all participants after joining the room
+      // Fetch all participants after joining the room to get complete info including moderator status
       console.log('Fetching participants after joining room');
-      await fetchParticipants(room.id);
+      await fetchParticipants(roomId);
       
     } catch (error) {
       console.error('Error joining room:', error);

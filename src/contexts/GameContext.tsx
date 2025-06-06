@@ -7,6 +7,7 @@ import { useRoomOperations } from '../hooks/useRoomOperations';
 import { useStoryOperations } from '../hooks/useStoryOperations';
 import { useVotingOperations } from '../hooks/useVotingOperations';
 import { useParticipantNotifications } from '../hooks/useParticipantNotifications';
+import { useSignalR } from '../hooks/useSignalR';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -19,6 +20,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Use participant notifications hook
   useParticipantNotifications(gameState.players, gameState.currentPlayer);
+
+  // Use SignalR for real-time updates
+  const { connection, isConnected } = useSignalR(gameState, fetchParticipants);
 
   return (
     <GameContext.Provider
@@ -34,6 +38,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         leaveRoom,
         fetchParticipants,
         isCreatingRoom,
+        signalRConnection: connection,
+        isSignalRConnected: isConnected,
       }}
     >
       {children}

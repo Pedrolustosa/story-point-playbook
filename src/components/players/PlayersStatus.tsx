@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { Crown, CheckCircle, Clock, User, RefreshCw } from 'lucide-react';
+import { Crown, CheckCircle, Clock, User, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
-  const { gameState, fetchParticipants } = useGame();
+  const { gameState, fetchParticipants, isSignalRConnected } = useGame();
 
   const handleRefreshParticipants = async () => {
     if (gameState.roomId) {
@@ -16,7 +16,20 @@ export const PlayersStatus: React.FC = () => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Participantes ({gameState.players.length})</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-900">Participantes ({gameState.players.length})</h3>
+          {isSignalRConnected ? (
+            <div className="flex items-center gap-1 text-green-600" title="Atualizações automáticas ativas">
+              <Wifi className="w-4 h-4" />
+              <span className="text-xs">Auto</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 text-orange-500" title="Atualizações automáticas desconectadas">
+              <WifiOff className="w-4 h-4" />
+              <span className="text-xs">Manual</span>
+            </div>
+          )}
+        </div>
         {gameState.roomId && (
           <button
             onClick={handleRefreshParticipants}

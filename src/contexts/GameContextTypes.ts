@@ -1,5 +1,6 @@
 
 import { GameState, Story } from '../types/game';
+import { HubConnection } from '@microsoft/signalr';
 
 export interface GameContextType {
   gameState: GameState;
@@ -13,4 +14,6 @@ export interface GameContextType {
   leaveRoom: () => void;
   fetchParticipants: (roomId: string) => Promise<any[]>;
   isCreatingRoom: boolean;
+  signalRConnection: HubConnection | null;
+  isSignalRConnected: boolean;
 }

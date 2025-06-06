@@ -16,17 +16,22 @@ export const useFetchParticipants = (
       
       console.log('Fetched participants from API:', users);
       
-      // Get room details to determine who is the moderator
-      const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode || roomId);
-      const room: RoomDto = 'data' in roomResponse ? roomResponse.data : roomResponse;
-      
-      console.log('Room details:', room);
+      // Only try to get room details if we have a roomCode
+      let room: RoomDto | null = null;
+      if (gameState.roomCode) {
+        console.log('Fetching room details using roomCode:', gameState.roomCode);
+        const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode);
+        room = 'data' in roomResponse ? roomResponse.data : roomResponse;
+        console.log('Room details:', room);
+      } else {
+        console.warn('No roomCode available, skipping room details fetch');
+      }
       
       const players: Player[] = users.map(user => ({
         id: user.id,
         name: user.displayName,
-        // The user who created the room is the moderator
-        isModerator: room.createdBy?.id === user.id,
+        // The user who created the room is the moderator (only if we have room details)
+        isModerator: room ? room.createdBy?.id === user.id : false,
         isProductOwner: user.role === 'ProductOwner',
         hasVoted: false,
         // Preserve vote if votes are revealed

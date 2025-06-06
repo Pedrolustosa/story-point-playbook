@@ -18,6 +18,7 @@ export const useFetchParticipants = (
       
       // Get current users to preserve voting state and moderator status
       const currentUsers = gameState.users;
+      const currentUserId = gameState.currentUser?.id;
       
       const users: User[] = usersData.map(userData => {
         // Find existing user to preserve their state
@@ -26,7 +27,7 @@ export const useFetchParticipants = (
         return {
           id: userData.id,
           name: userData.displayName,
-          isModerator: existingUser?.isModerator || false,
+          isModerator: userData.role === 'Moderator' || existingUser?.isModerator || false,
           isProductOwner: userData.role === 'ProductOwner',
           hasVoted: gameState.votesRevealed ? false : (existingUser?.hasVoted || false),
           vote: gameState.votesRevealed ? undefined : existingUser?.vote
@@ -34,14 +35,17 @@ export const useFetchParticipants = (
       });
       
       console.log('Processed users:', users);
+      console.log('Current user ID:', currentUserId);
       
       setGameState(prev => {
-        // Update current user if they're in the participants list
-        const updatedCurrentUser = prev.currentUser ? 
-          users.find(u => u.id === prev.currentUser!.id) || prev.currentUser :
+        // Find the current user in the updated list
+        const updatedCurrentUser = currentUserId ? 
+          users.find(u => u.id === currentUserId) || prev.currentUser :
           prev.currentUser;
           
+        console.log('Updated current user:', updatedCurrentUser);
         console.log('Updating game state with new users list');
+        
         return {
           ...prev,
           users,
@@ -54,7 +58,7 @@ export const useFetchParticipants = (
       console.error('Error fetching participants:', error);
       return [];
     }
-  }, [setGameState]);
+  }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed]);
 
   return { fetchParticipants };
 };

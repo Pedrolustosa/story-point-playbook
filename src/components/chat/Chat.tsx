@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, MessageCircle, X } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
@@ -5,7 +6,7 @@ import { useChat } from '../../hooks/useChat';
 
 export const Chat: React.FC = () => {
   const { gameState } = useGame();
-  const { messages, isLoading, sendMessage, isSending, startPolling, stopPolling } = useChat();
+  const { messages, isLoading, sendMessage, isSending, startPolling, stopPolling, isApiMode } = useChat();
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -20,15 +21,15 @@ export const Chat: React.FC = () => {
 
   // Controlar polling baseado no estado do chat
   useEffect(() => {
-    if (isOpen && gameState.roomId) {
+    if (isOpen && gameState.roomId && isApiMode) {
       startPolling();
     } else {
       stopPolling();
     }
-  }, [isOpen, gameState.roomId, startPolling, stopPolling]);
+  }, [isOpen, gameState.roomId, isApiMode, startPolling, stopPolling]);
 
   const handleSendMessage = () => {
-    if (!message.trim() || !gameState.currentPlayer || isSending) return;
+    if (!message.trim() || !gameState.currentPlayer || isSending || !isApiMode) return;
     
     sendMessage(message);
     setMessage('');
@@ -48,8 +49,8 @@ export const Chat: React.FC = () => {
     });
   };
 
-  // Não mostrar o chat se não estiver em uma sala
-  if (!gameState.roomId || !gameState.currentPlayer) {
+  // Não mostrar o chat se não estiver em uma sala ou se não estiver no modo API
+  if (!gameState.roomId || !gameState.currentPlayer || !isApiMode) {
     return null;
   }
 

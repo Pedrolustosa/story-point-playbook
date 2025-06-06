@@ -84,23 +84,33 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       
       const response = await ApiService.rooms.createRoom(roomData);
 
-      console.log('Room created successfully:', response.data);
+      console.log('Room created successfully:', response);
+      console.log('Response data:', response.data);
+      
+      // Verificar se response e response.data existem
+      if (!response || !response.data) {
+        console.error('API response is invalid:', response);
+        throw new Error('Invalid API response: no data received');
+      }
       
       const room = response.data;
       
-      // Handle different API response structures with proper null checks
+      // Handle different API response structures with better error handling
       const newPlayer: Player = {
-        id: room.createdBy?.id || '1',
+        id: room.createdBy?.id || playerName,
         name: room.createdBy?.displayName || playerName,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
       };
 
+      console.log('Setting game state with room:', room);
+      console.log('New player:', newPlayer);
+
       setGameState(prev => ({
         ...prev,
         roomCode: room.code,
-        roomId: room.id,
+        roomId: room.id, // Usar o ID real da API para requisições
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));
@@ -121,7 +131,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setGameState(prev => ({
         ...prev,
         roomCode,
-        roomId: roomCode,
+        roomId: roomCode, // No modo local, usar o código como ID
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));
@@ -138,6 +148,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       console.log('Joined room successfully:', response.data);
 
+      if (!response || !response.data) {
+        throw new Error('Invalid API response: no data received');
+      }
+
       const user = response.data;
       const newPlayer: Player = {
         id: user.id,
@@ -150,7 +164,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setGameState(prev => ({
         ...prev,
         roomCode,
-        roomId: user.roomId,
+        roomId: user.roomId, // Usar o roomId da resposta da API
         players: [...prev.players, newPlayer],
         currentPlayer: newPlayer,
       }));
@@ -168,7 +182,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setGameState(prev => ({
         ...prev,
         roomCode,
-        roomId: roomCode,
+        roomId: roomCode, // No modo local, usar o código como ID
         players: [...prev.players, newPlayer],
         currentPlayer: newPlayer,
       }));

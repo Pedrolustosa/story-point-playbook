@@ -29,12 +29,13 @@ export const useRoomOperations = (
       console.log('Room created successfully:', response);
       console.log('Response data:', response.data);
       
-      if (!response || !response.data) {
-        console.error('API response is invalid:', response);
-        throw new Error('Invalid API response: no data received');
-      }
+      // Ajustar a validação da resposta - os dados podem estar em response.data ou diretamente em response
+      const room = response.data || response;
       
-      const room = response.data;
+      if (!room || !room.id) {
+        console.error('API response is invalid:', room);
+        throw new Error('Invalid API response: missing room data');
+      }
       
       const newPlayer: Player = {
         id: room.createdBy?.id || playerName,
@@ -87,11 +88,13 @@ export const useRoomOperations = (
 
       console.log('Joined room successfully:', response.data);
 
-      if (!response || !response.data) {
-        throw new Error('Invalid API response: no data received');
+      // Ajustar a validação da resposta
+      const user = response.data || response;
+      
+      if (!user || !user.id) {
+        throw new Error('Invalid API response: missing user data');
       }
 
-      const user = response.data;
       const newPlayer: Player = {
         id: user.id,
         name: user.displayName,

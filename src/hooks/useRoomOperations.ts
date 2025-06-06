@@ -1,7 +1,7 @@
 
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
-import { VotingScale } from '../services/api/types';
+import { VotingScale, RoomDto, UserDto, ApiResponse } from '../services/api/types';
 import { Player, GameState } from '../types/game';
 import { generateRoomCode } from '../utils/gameUtils';
 
@@ -29,8 +29,13 @@ export const useRoomOperations = (
       console.log('Room created successfully:', response);
       console.log('Response data:', response.data);
       
-      // Ajustar a validação da resposta - os dados podem estar em response.data ou diretamente em response
-      const room = response.data || response;
+      // Extract the actual room data from the response
+      let room: RoomDto;
+      if ('data' in response && response.data) {
+        room = response.data;
+      } else {
+        room = response as RoomDto;
+      }
       
       if (!room || !room.id) {
         console.error('API response is invalid:', room);
@@ -88,8 +93,13 @@ export const useRoomOperations = (
 
       console.log('Joined room successfully:', response.data);
 
-      // Ajustar a validação da resposta
-      const user = response.data || response;
+      // Extract the actual user data from the response
+      let user: UserDto;
+      if ('data' in response && response.data) {
+        user = response.data;
+      } else {
+        user = response as UserDto;
+      }
       
       if (!user || !user.id) {
         throw new Error('Invalid API response: missing user data');

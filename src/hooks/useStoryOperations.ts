@@ -59,7 +59,7 @@ export const useStoryOperations = (
         votingInProgress: true,
         votesRevealed: false,
         revealCountdown: null,
-        players: prev.players.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+        users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
       }));
     }
   }, [gameState.roomCode, gameState.stories, setGameState]);

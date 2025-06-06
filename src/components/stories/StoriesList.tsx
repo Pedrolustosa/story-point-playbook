@@ -8,7 +8,7 @@ interface StoriesListProps {
 
 export const StoriesList: React.FC<StoriesListProps> = ({ onAddStory }) => {
   const { gameState, setCurrentStory } = useGame();
-  const isProductOwner = gameState.currentPlayer?.isProductOwner;
+  const isProductOwner = gameState.currentUser?.isProductOwner;
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">

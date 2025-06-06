@@ -8,12 +8,12 @@ export const useVotingOperations = (
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
   const castVote = useCallback(async (vote: number | string) => {
-    if (!gameState.currentPlayer || gameState.currentPlayer.isProductOwner || !gameState.currentStory) return;
+    if (!gameState.currentUser || gameState.currentUser.isProductOwner || !gameState.currentStory) return;
 
     try {
       await ApiService.stories.submitVote({
         storyId: gameState.currentStory.id,
-        userId: gameState.currentPlayer.id,
+        userId: gameState.currentUser.id,
         value: vote.toString(),
       });
     } catch (error) {
@@ -22,13 +22,13 @@ export const useVotingOperations = (
 
     setGameState(prev => ({
       ...prev,
-      players: prev.players.map(p =>
-        p.id === prev.currentPlayer?.id
+      users: prev.users.map(p =>
+        p.id === prev.currentUser?.id
           ? { ...p, hasVoted: true, vote }
           : p
       ),
     }));
-  }, [gameState.currentPlayer, gameState.currentStory, setGameState]);
+  }, [gameState.currentUser, gameState.currentStory, setGameState]);
 
   const revealVotes = useCallback(async () => {
     try {
@@ -75,7 +75,7 @@ export const useVotingOperations = (
       votingInProgress: true,
       votesRevealed: false,
       revealCountdown: null,
-      players: prev.players.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+      users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
     }));
   }, [setGameState]);
 

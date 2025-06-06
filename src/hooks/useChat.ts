@@ -45,7 +45,7 @@ export const useChat = () => {
   });
 
   const sendMessage = useCallback((message: string) => {
-    if (!message.trim() || !gameState.currentPlayer) return;
+    if (!message.trim() || !gameState.currentUser) return;
     
     if (!isApiMode) {
       console.log('Chat not available in local mode');
@@ -53,7 +53,7 @@ export const useChat = () => {
     }
     
     sendMessageMutation.mutate({ message: message.trim() });
-  }, [sendMessageMutation, gameState.currentPlayer, isApiMode]);
+  }, [sendMessageMutation, gameState.currentUser, isApiMode]);
 
   const startPolling = () => setIsPolling(true);
   const stopPolling = () => setIsPolling(false);

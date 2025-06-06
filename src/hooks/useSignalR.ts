@@ -12,11 +12,11 @@ export const useSignalR = (
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const connectToHub = useCallback(async () => {
-    if (!gameState.roomCode || !gameState.roomId || !gameState.currentPlayer) {
+    if (!gameState.roomCode || !gameState.roomId || !gameState.currentUser) {
       console.log('SignalR: Missing required data for connection', {
         roomCode: gameState.roomCode,
         roomId: gameState.roomId,
-        currentPlayer: gameState.currentPlayer
+        currentUser: gameState.currentUser
       });
       return;
     }
@@ -90,9 +90,9 @@ export const useSignalR = (
         console.log('SignalR: Reconnected with connection ID:', connectionId);
         setIsConnected(true);
         setConnectionError(null);
-        if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
+        if (gameState.roomCode && gameState.roomId && gameState.currentUser) {
           try {
-            await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
+            await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
             console.log('SignalR: Rejoined room after reconnection');
           } catch (error) {
             console.error('SignalR: Error rejoining room after reconnection:', error);
@@ -107,7 +107,7 @@ export const useSignalR = (
       setConnectionError(null);
 
       // Join the room
-      await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
+      await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
       console.log('SignalR: Joined room successfully:', gameState.roomCode);
 
       connectionRef.current = connection;
@@ -117,14 +117,14 @@ export const useSignalR = (
       setIsConnected(false);
       setConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
     }
-  }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer, fetchParticipants, isConnected]);
+  }, [gameState.roomCode, gameState.roomId, gameState.currentUser, fetchParticipants, isConnected]);
 
   const disconnectFromHub = useCallback(async () => {
     if (connectionRef.current) {
       try {
-        if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
+        if (gameState.roomCode && gameState.roomId && gameState.currentUser) {
           console.log('SignalR: Leaving room before disconnect');
-          await connectionRef.current.invoke('LeaveRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
+          await connectionRef.current.invoke('LeaveRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
         }
         await connectionRef.current.stop();
         console.log('SignalR: Connection closed successfully');
@@ -136,11 +136,11 @@ export const useSignalR = (
         setConnectionError(null);
       }
     }
-  }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer]);
+  }, [gameState.roomCode, gameState.roomId, gameState.currentUser]);
 
   // Connect when room is available
   useEffect(() => {
-    if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
+    if (gameState.roomCode && gameState.roomId && gameState.currentUser) {
       console.log('SignalR: Room data available, attempting to connect');
       connectToHub();
     }
@@ -151,7 +151,7 @@ export const useSignalR = (
         disconnectFromHub();
       }
     };
-  }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer?.id]);
+  }, [gameState.roomCode, gameState.roomId, gameState.currentUser?.id]);
 
   // Disconnect when leaving room
   useEffect(() => {

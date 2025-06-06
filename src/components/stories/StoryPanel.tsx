@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FileText } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
@@ -14,7 +13,7 @@ export const StoryPanel: React.FC = () => {
         </div>
         <h2 className="text-xl font-semibold text-gray-500 mb-2">Nenhuma história selecionada</h2>
         <p className="text-gray-400">
-          {gameState.currentPlayer?.isModerator 
+          {gameState.currentUser?.isModerator 
             ? 'Selecione uma história da lista para começar a votação' 
             : 'Aguardando o moderador selecionar uma história'
           }

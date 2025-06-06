@@ -18,7 +18,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({ onAddStory }) => {
     }
   };
 
-  const isProductOwner = gameState.currentPlayer?.isProductOwner;
+  const isProductOwner = gameState.currentUser?.isProductOwner;
 
   return (
     <div className="bg-white shadow-sm border-b">
@@ -50,7 +50,7 @@ export const GameHeader: React.FC<GameHeaderProps> = ({ onAddStory }) => {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Users className="w-4 h-4" />
-              <span>{gameState.players.length} participante{gameState.players.length !== 1 ? 's' : ''}</span>
+              <span>{gameState.users.length} participante{gameState.users.length !== 1 ? 's' : ''}</span>
             </div>
             
             {isProductOwner && (

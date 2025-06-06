@@ -29,7 +29,7 @@ export const Chat: React.FC = () => {
   }, [isOpen, gameState.roomId, isApiMode, startPolling, stopPolling]);
 
   const handleSendMessage = () => {
-    if (!message.trim() || !gameState.currentPlayer || isSending || !isApiMode) return;
+    if (!message.trim() || !gameState.currentUser || isSending || !isApiMode) return;
     
     sendMessage(message);
     setMessage('');
@@ -50,7 +50,7 @@ export const Chat: React.FC = () => {
   };
 
   // Não mostrar o chat se não estiver em uma sala ou se não estiver no modo API
-  if (!gameState.roomId || !gameState.currentPlayer || !isApiMode) {
+  if (!gameState.roomId || !gameState.currentUser || !isApiMode) {
     return null;
   }
 
@@ -97,17 +97,17 @@ export const Chat: React.FC = () => {
             <div
               key={index}
               className={`flex flex-col ${
-                msg.user === gameState.currentPlayer?.name ? 'items-end' : 'items-start'
+                msg.user === gameState.currentUser?.name ? 'items-end' : 'items-start'
               }`}
             >
               <div
                 className={`max-w-[80%] p-3 rounded-lg ${
-                  msg.user === gameState.currentPlayer?.name
+                  msg.user === gameState.currentUser?.name
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-900'
                 }`}
               >
-                {msg.user !== gameState.currentPlayer?.name && (
+                {msg.user !== gameState.currentUser?.name && (
                   <p className="text-xs font-medium mb-1 opacity-70">
                     {msg.user}
                   </p>

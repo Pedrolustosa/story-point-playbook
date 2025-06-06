@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { GameState } from '../types/game';
 
@@ -8,23 +8,28 @@ export const useSignalR = (
   fetchParticipants: (roomId: string) => Promise<any[]>
 ) => {
   const connectionRef = useRef<HubConnection | null>(null);
-  const isConnectedRef = useRef(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   const connectToHub = useCallback(async () => {
     if (!gameState.roomCode || !gameState.roomId || !gameState.currentPlayer) {
+      console.log('SignalR: Missing required data for connection', {
+        roomCode: gameState.roomCode,
+        roomId: gameState.roomId,
+        currentPlayer: gameState.currentPlayer
+      });
       return;
     }
 
-    if (connectionRef.current && isConnectedRef.current) {
-      console.log('SignalR already connected');
+    if (connectionRef.current && isConnected) {
+      console.log('SignalR: Already connected');
       return;
     }
 
     try {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-      const hubUrl = `${baseUrl}/gameHub`;
+      const hubUrl = `${baseUrl.replace('/api', '')}/gameHub`;
       
-      console.log('Connecting to SignalR hub:', hubUrl);
+      console.log('SignalR: Connecting to hub:', hubUrl);
 
       const connection = new HubConnectionBuilder()
         .withUrl(hubUrl)
@@ -33,17 +38,19 @@ export const useSignalR = (
         .build();
 
       // Set up event handlers
-      connection.on('UserJoined', (userId: string) => {
-        console.log('SignalR: User joined:', userId);
+      connection.on('UserJoined', async (userId: string) => {
+        console.log('SignalR: User joined event received:', userId);
         if (gameState.roomId) {
-          fetchParticipants(gameState.roomId);
+          console.log('SignalR: Fetching participants after user joined');
+          await fetchParticipants(gameState.roomId);
         }
       });
 
-      connection.on('UserLeft', (userId: string) => {
-        console.log('SignalR: User left:', userId);
+      connection.on('UserLeft', async (userId: string) => {
+        console.log('SignalR: User left event received:', userId);
         if (gameState.roomId) {
-          fetchParticipants(gameState.roomId);
+          console.log('SignalR: Fetching participants after user left');
+          await fetchParticipants(gameState.roomId);
         }
       });
 
@@ -51,42 +58,60 @@ export const useSignalR = (
         console.log('SignalR: Participant count updated:', count);
       });
 
-      // Handle reconnection
-      connection.onreconnected(() => {
-        console.log('SignalR reconnected, rejoining room');
+      // Handle connection state changes
+      connection.onclose(() => {
+        console.log('SignalR: Connection closed');
+        setIsConnected(false);
+      });
+
+      connection.onreconnecting(() => {
+        console.log('SignalR: Reconnecting...');
+        setIsConnected(false);
+      });
+
+      connection.onreconnected(async () => {
+        console.log('SignalR: Reconnected, rejoining room');
+        setIsConnected(true);
         if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
-          connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
+          try {
+            await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
+            console.log('SignalR: Rejoined room after reconnection');
+          } catch (error) {
+            console.error('SignalR: Error rejoining room after reconnection:', error);
+          }
         }
       });
 
       await connection.start();
-      console.log('SignalR connection established');
+      console.log('SignalR: Connection established successfully');
+      setIsConnected(true);
 
       // Join the room
       await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
-      console.log('Joined SignalR room:', gameState.roomCode);
+      console.log('SignalR: Joined room successfully:', gameState.roomCode);
 
       connectionRef.current = connection;
-      isConnectedRef.current = true;
 
     } catch (error) {
-      console.error('Error connecting to SignalR:', error);
+      console.error('SignalR: Error connecting to hub:', error);
+      setIsConnected(false);
     }
-  }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer, fetchParticipants]);
+  }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer, fetchParticipants, isConnected]);
 
   const disconnectFromHub = useCallback(async () => {
-    if (connectionRef.current && isConnectedRef.current) {
+    if (connectionRef.current) {
       try {
         if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
+          console.log('SignalR: Leaving room before disconnect');
           await connectionRef.current.invoke('LeaveRoom', gameState.roomCode, gameState.roomId, gameState.currentPlayer.id);
         }
         await connectionRef.current.stop();
-        console.log('SignalR connection closed');
+        console.log('SignalR: Connection closed successfully');
       } catch (error) {
-        console.error('Error disconnecting from SignalR:', error);
+        console.error('SignalR: Error disconnecting:', error);
       } finally {
         connectionRef.current = null;
-        isConnectedRef.current = false;
+        setIsConnected(false);
       }
     }
   }, [gameState.roomCode, gameState.roomId, gameState.currentPlayer]);
@@ -94,11 +119,13 @@ export const useSignalR = (
   // Connect when room is available
   useEffect(() => {
     if (gameState.roomCode && gameState.roomId && gameState.currentPlayer) {
+      console.log('SignalR: Room data available, attempting to connect');
       connectToHub();
     }
 
     return () => {
-      if (isConnectedRef.current) {
+      if (connectionRef.current) {
+        console.log('SignalR: Cleaning up connection');
         disconnectFromHub();
       }
     };
@@ -107,13 +134,14 @@ export const useSignalR = (
   // Disconnect when leaving room
   useEffect(() => {
     if (!gameState.roomCode && connectionRef.current) {
+      console.log('SignalR: Room code cleared, disconnecting');
       disconnectFromHub();
     }
   }, [gameState.roomCode, disconnectFromHub]);
 
   return {
     connection: connectionRef.current,
-    isConnected: isConnectedRef.current,
+    isConnected,
     connectToHub,
     disconnectFromHub
   };

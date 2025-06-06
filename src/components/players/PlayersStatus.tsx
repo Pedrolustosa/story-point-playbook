@@ -8,7 +8,7 @@ export const PlayersStatus: React.FC = () => {
 
   const handleRefreshParticipants = async () => {
     if (gameState.roomId) {
-      console.log('Refreshing participants for room:', gameState.roomId);
+      console.log('Manual refresh: Fetching participants for room:', gameState.roomId);
       await fetchParticipants(gameState.roomId);
     }
   };

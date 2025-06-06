@@ -1,7 +1,8 @@
 
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
-import { VotingScale, RoomDto, UserDto, ApiResponse } from '../services/api/types';
+import { VotingScale, RoomDto, UserDto } from '../services/api/types';
+import { ApiResponse } from '../services/api/httpClient';
 import { Player, GameState } from '../types/game';
 import { generateRoomCode } from '../utils/gameUtils';
 
@@ -24,18 +25,13 @@ export const useRoomOperations = (
       
       console.log('Sending room creation request with data:', roomData);
       
-      const response = await ApiService.rooms.createRoom(roomData);
+      const response: ApiResponse<RoomDto> = await ApiService.rooms.createRoom(roomData);
 
       console.log('Room created successfully:', response);
       console.log('Response data:', response.data);
       
       // Extract the actual room data from the response
-      let room: RoomDto;
-      if ('data' in response && response.data) {
-        room = response.data;
-      } else {
-        room = response as RoomDto;
-      }
+      const room = response.data;
       
       if (!room || !room.id) {
         console.error('API response is invalid:', room);
@@ -85,7 +81,7 @@ export const useRoomOperations = (
 
   const joinRoom = useCallback(async (roomCode: string, playerName: string) => {
     try {
-      const response = await ApiService.rooms.joinRoom({
+      const response: ApiResponse<UserDto> = await ApiService.rooms.joinRoom({
         roomCode,
         displayName: playerName,
         role: 'Developer',
@@ -94,12 +90,7 @@ export const useRoomOperations = (
       console.log('Joined room successfully:', response.data);
 
       // Extract the actual user data from the response
-      let user: UserDto;
-      if ('data' in response && response.data) {
-        user = response.data;
-      } else {
-        user = response as UserDto;
-      }
+      const user = response.data;
       
       if (!user || !user.id) {
         throw new Error('Invalid API response: missing user data');

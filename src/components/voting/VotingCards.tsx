@@ -5,11 +5,11 @@ import { useGame } from '../../contexts/GameContext';
 export const VotingCards: React.FC = () => {
   const { gameState, castVote } = useGame();
   
-  const currentPlayerVote = gameState.currentPlayer?.vote;
+  const currentUserVote = gameState.currentUser?.vote;
   const canVote = gameState.votingInProgress && 
                   gameState.currentStory && 
                   !gameState.votesRevealed && 
-                  !gameState.currentPlayer?.isProductOwner;
+                  !gameState.currentUser?.isProductOwner;
 
   if (!gameState.currentStory) {
     return (
@@ -25,7 +25,7 @@ export const VotingCards: React.FC = () => {
     );
   }
 
-  if (gameState.currentPlayer?.isProductOwner) {
+  if (gameState.currentUser?.isProductOwner) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <div className="text-blue-400 mb-4">
@@ -59,7 +59,7 @@ export const VotingCards: React.FC = () => {
       
       <div className="grid grid-cols-4 gap-3">
         {gameState.fibonacciCards.map((card) => {
-          const isSelected = currentPlayerVote === card;
+          const isSelected = currentUserVote === card;
           const isNumber = typeof card === 'number';
           
           return (
@@ -83,10 +83,10 @@ export const VotingCards: React.FC = () => {
         })}
       </div>
       
-      {currentPlayerVote && canVote && (
+      {currentUserVote && canVote && (
         <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
           <p className="text-sm font-medium text-blue-800">
-            Voto selecionado: <span className="text-lg">{currentPlayerVote}</span>
+            Voto selecionado: <span className="text-lg">{currentUserVote}</span>
           </p>
         </div>
       )}

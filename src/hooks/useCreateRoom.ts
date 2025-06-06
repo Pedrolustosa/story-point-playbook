@@ -2,7 +2,7 @@
 import { useCallback, useState } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto } from '../services/api/types';
-import { Player, GameState } from '../types/game';
+import { User, GameState } from '../types/game';
 import { generateRoomCode } from '../utils/gameUtils';
 
 export const useCreateRoom = (
@@ -12,16 +12,16 @@ export const useCreateRoom = (
 ) => {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
-  const createRoom = useCallback(async (playerName: string) => {
-    console.log('Creating room for player:', playerName);
+  const createRoom = useCallback(async (userName: string) => {
+    console.log('Creating room for user:', userName);
     console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL);
     
     setIsCreatingRoom(true);
     
     try {
       const roomData = {
-        name: `Sala de ${playerName}`,
-        createdBy: playerName,
+        name: `Sala de ${userName}`,
+        createdBy: userName,
         scale: VotingScale.Fibonacci,
         timeLimit: 0,
         autoReveal: false,
@@ -43,23 +43,23 @@ export const useCreateRoom = (
         throw new Error('Invalid API response: missing room data');
       }
       
-      const newPlayer: Player = {
-        id: room.createdBy?.id || playerName,
-        name: room.createdBy?.displayName || playerName,
+      const newUser: User = {
+        id: room.createdBy?.id || userName,
+        name: room.createdBy?.displayName || userName,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
       };
 
       console.log('Setting game state with room:', room);
-      console.log('New player:', newPlayer);
+      console.log('New user:', newUser);
 
       setGameState(prev => ({
         ...prev,
         roomCode: room.code,
         roomId: room.id,
-        players: [newPlayer],
-        currentPlayer: newPlayer,
+        users: [newUser],
+        currentUser: newUser,
       }));
 
       // Fetch all participants after creating the room
@@ -71,9 +71,9 @@ export const useCreateRoom = (
       console.log('Falling back to local mode due to API error');
       
       const roomCode = generateRoomCode();
-      const newPlayer: Player = {
+      const newUser: User = {
         id: '1',
-        name: playerName,
+        name: userName,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
@@ -83,8 +83,8 @@ export const useCreateRoom = (
         ...prev,
         roomCode,
         roomId: roomCode,
-        players: [newPlayer],
-        currentPlayer: newPlayer,
+        users: [newUser],
+        currentUser: newUser,
       }));
     } finally {
       setIsCreatingRoom(false);

@@ -21,7 +21,7 @@ export const PlayersStatus: React.FC = () => {
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-gray-900">Participantes ({gameState.players.length})</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Participantes ({gameState.users.length})</h3>
           {isSignalRConnected ? (
             <div className="flex items-center gap-1 text-green-600" title="Atualizações automáticas ativas">
               <Wifi className="w-4 h-4" />
@@ -58,13 +58,13 @@ export const PlayersStatus: React.FC = () => {
       )}
 
       <div className="space-y-3">
-        {gameState.players.map((player) => (
+        {gameState.users.map((user) => (
           <div
-            key={player.id}
+            key={user.id}
             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
           >
             <div className="flex items-center gap-3">
-              {player.isModerator ? (
+              {user.isModerator ? (
                 <div className="flex items-center gap-1">
                   <Crown className="w-5 h-5 text-yellow-500" />
                   <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-1 rounded-full">
@@ -74,8 +74,8 @@ export const PlayersStatus: React.FC = () => {
               ) : (
                 <User className="w-4 h-4 text-gray-400" />
               )}
-              <span className="font-medium text-gray-900">{player.name}</span>
-              {player.id === gameState.currentPlayer?.id && (
+              <span className="font-medium text-gray-900">{user.name}</span>
+              {user.id === gameState.currentUser?.id && (
                 <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
                   Você
                 </span>
@@ -83,8 +83,8 @@ export const PlayersStatus: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-2">
-              {gameState.votingInProgress && !player.isModerator && (
-                player.hasVoted ? (
+              {gameState.votingInProgress && !user.isModerator && (
+                user.hasVoted ? (
                   <div className="flex items-center gap-1 text-green-600">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">Votou</span>
@@ -97,16 +97,16 @@ export const PlayersStatus: React.FC = () => {
                 )
               )}
               
-              {gameState.votingInProgress && player.isModerator && (
+              {gameState.votingInProgress && user.isModerator && (
                 <div className="flex items-center gap-1 text-yellow-600">
                   <Crown className="w-4 h-4" />
                   <span className="text-sm font-medium">Product Owner</span>
                 </div>
               )}
               
-              {gameState.votesRevealed && player.vote && (
+              {gameState.votesRevealed && user.vote && (
                 <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg font-bold">
-                  {player.vote}
+                  {user.vote}
                 </div>
               )}
             </div>

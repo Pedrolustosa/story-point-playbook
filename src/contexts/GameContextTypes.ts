@@ -4,8 +4,8 @@ import { HubConnection } from '@microsoft/signalr';
 
 export interface GameContextType {
   gameState: GameState;
-  createRoom: (playerName: string) => Promise<void>;
-  joinRoom: (roomCode: string, playerName: string) => Promise<void>;
+  createRoom: (userName: string) => Promise<void>;
+  joinRoom: (roomCode: string, userName: string) => Promise<void>;
   addStory: (story: Omit<Story, 'id' | 'isCompleted'>) => Promise<void>;
   setCurrentStory: (storyId: string) => Promise<void>;
   castVote: (vote: number | string) => Promise<void>;

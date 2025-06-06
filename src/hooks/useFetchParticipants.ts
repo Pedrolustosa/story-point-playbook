@@ -2,7 +2,7 @@
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { UserDto } from '../services/api/types';
-import { Player, GameState } from '../types/game';
+import { User, GameState } from '../types/game';
 
 export const useFetchParticipants = (
   gameState: GameState,
@@ -12,44 +12,44 @@ export const useFetchParticipants = (
     try {
       console.log('Fetching participants for room:', roomId);
       const response = await ApiService.rooms.getParticipants(roomId);
-      const users: UserDto[] = 'data' in response ? response.data : response;
+      const usersData: UserDto[] = 'data' in response ? response.data : response;
       
-      console.log('Fetched participants from API:', users);
+      console.log('Fetched participants from API:', usersData);
       
-      // Get current players to preserve voting state and moderator status
-      const currentPlayers = gameState.players;
+      // Get current users to preserve voting state and moderator status
+      const currentUsers = gameState.users;
       
-      const players: Player[] = users.map(user => {
-        // Find existing player to preserve their state
-        const existingPlayer = currentPlayers.find(p => p.id === user.id);
+      const users: User[] = usersData.map(userData => {
+        // Find existing user to preserve their state
+        const existingUser = currentUsers.find(u => u.id === userData.id);
         
         return {
-          id: user.id,
-          name: user.displayName,
-          isModerator: existingPlayer?.isModerator || false,
-          isProductOwner: user.role === 'ProductOwner',
-          hasVoted: gameState.votesRevealed ? false : (existingPlayer?.hasVoted || false),
-          vote: gameState.votesRevealed ? undefined : existingPlayer?.vote
+          id: userData.id,
+          name: userData.displayName,
+          isModerator: existingUser?.isModerator || false,
+          isProductOwner: userData.role === 'ProductOwner',
+          hasVoted: gameState.votesRevealed ? false : (existingUser?.hasVoted || false),
+          vote: gameState.votesRevealed ? undefined : existingUser?.vote
         };
       });
       
-      console.log('Processed players:', players);
+      console.log('Processed users:', users);
       
       setGameState(prev => {
-        // Update current player if they're in the participants list
-        const updatedCurrentPlayer = prev.currentPlayer ? 
-          players.find(p => p.id === prev.currentPlayer!.id) || prev.currentPlayer :
-          prev.currentPlayer;
+        // Update current user if they're in the participants list
+        const updatedCurrentUser = prev.currentUser ? 
+          users.find(u => u.id === prev.currentUser!.id) || prev.currentUser :
+          prev.currentUser;
           
-        console.log('Updating game state with new players list');
+        console.log('Updating game state with new users list');
         return {
           ...prev,
-          players,
-          currentPlayer: updatedCurrentPlayer
+          users,
+          currentUser: updatedCurrentUser
         };
       });
       
-      return players;
+      return users;
     } catch (error) {
       console.error('Error fetching participants:', error);
       return [];

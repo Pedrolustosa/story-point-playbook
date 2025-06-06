@@ -19,7 +19,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const { castVote, revealVotes, resetVoting } = useVotingOperations(gameState, setGameState);
 
   // Use participant notifications hook
-  useParticipantNotifications(gameState.players, gameState.currentPlayer);
+  useParticipantNotifications(gameState.users, gameState.currentUser);
 
   // Use SignalR for real-time updates
   const { connection, isConnected, connectionError } = useSignalR(gameState, fetchParticipants);
@@ -57,4 +57,4 @@ export const useGame = () => {
 };
 
 // Re-export types for backwards compatibility
-export type { Player, Story, GameState } from '../types/game';
+export type { User, Story, GameState } from '../types/game';

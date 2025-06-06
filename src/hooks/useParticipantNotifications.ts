@@ -1,35 +1,35 @@
 
 import { useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { Player } from '../types/game';
+import { User } from '../types/game';
 
-export const useParticipantNotifications = (players: Player[], currentPlayer: Player | null) => {
-  const previousPlayersRef = useRef<Player[]>([]);
+export const useParticipantNotifications = (users: User[], currentUser: User | null) => {
+  const previousUsersRef = useRef<User[]>([]);
   const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
     // Skip notifications on initial load
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;
-      previousPlayersRef.current = players;
+      previousUsersRef.current = users;
       return;
     }
 
-    const previousPlayers = previousPlayersRef.current;
-    const newPlayers = players.filter(player => 
-      !previousPlayers.some(prevPlayer => prevPlayer.id === player.id) &&
-      player.id !== currentPlayer?.id // Don't notify for the current player
+    const previousUsers = previousUsersRef.current;
+    const newUsers = users.filter(user => 
+      !previousUsers.some(prevUser => prevUser.id === user.id) &&
+      user.id !== currentUser?.id // Don't notify for the current user
     );
 
-    // Show toast for each new player
-    newPlayers.forEach(player => {
+    // Show toast for each new user
+    newUsers.forEach(user => {
       toast({
         title: "Novo participante!",
-        description: `${player.name} entrou na sala`,
+        description: `${user.name} entrou na sala`,
         duration: 3000,
       });
     });
 
-    previousPlayersRef.current = players;
-  }, [players, currentPlayer]);
+    previousUsersRef.current = users;
+  }, [users, currentUser]);
 };

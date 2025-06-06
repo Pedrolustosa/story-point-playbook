@@ -6,9 +6,9 @@ import { useGame } from '../../contexts/GameContext';
 export const Results: React.FC = () => {
   const { gameState } = useGame();
 
-  const votes = gameState.players
-    .filter(p => p.vote !== undefined)
-    .map(p => p.vote);
+  const votes = gameState.users
+    .filter(u => u.vote !== undefined)
+    .map(u => u.vote);
 
   // Verificar se há votos antes de processar
   if (votes.length === 0) {

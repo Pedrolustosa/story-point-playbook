@@ -1,5 +1,5 @@
 
-export interface Player {
+export interface User {
   id: string;
   name: string;
   isModerator: boolean;
@@ -19,8 +19,8 @@ export interface Story {
 export interface GameState {
   roomCode: string;
   roomId: string;
-  players: Player[];
-  currentPlayer: Player | null;
+  users: User[];
+  currentUser: User | null;
   currentStory: Story | null;
   stories: Story[];
   votingInProgress: boolean;

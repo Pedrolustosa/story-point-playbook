@@ -2,43 +2,43 @@
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { UserDto } from '../services/api/types';
-import { Player, GameState } from '../types/game';
+import { User, GameState } from '../types/game';
 
 export const useJoinRoom = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
   fetchParticipants: (roomId: string) => Promise<any[]>
 ) => {
-  const joinRoom = useCallback(async (roomCode: string, playerName: string) => {
+  const joinRoom = useCallback(async (roomCode: string, userName: string) => {
     try {
-      console.log('Joining room:', roomCode, 'as:', playerName);
+      console.log('Joining room:', roomCode, 'as:', userName);
       
       const response = await ApiService.rooms.joinRoom(roomCode, {
-        displayName: playerName,
+        displayName: userName,
         role: 'Developer',
       });
 
       console.log('Joined room successfully:', response);
 
       // Extract the actual user data from the response
-      const user: UserDto = 'data' in response ? response.data : response;
+      const userData: UserDto = 'data' in response ? response.data : response;
       
-      console.log('Processed user data:', user);
+      console.log('Processed user data:', userData);
       
-      if (!user || !user.id) {
+      if (!userData || !userData.id) {
         throw new Error('Invalid API response: missing user data');
       }
 
       // Use roomId from the user response instead of making another API call
-      const roomId = user.roomId;
+      const roomId = userData.roomId;
       console.log('Using roomId from join response:', roomId);
 
-      // Create the new player without knowing moderator status yet
-      const newPlayer: Player = {
-        id: user.id,
-        name: user.displayName,
+      // Create the new user without knowing moderator status yet
+      const newUser: User = {
+        id: userData.id,
+        name: userData.displayName,
         isModerator: false, // Will be updated when fetching participants
-        isProductOwner: user.role === 'ProductOwner',
+        isProductOwner: userData.role === 'ProductOwner',
         hasVoted: false,
       };
 
@@ -46,7 +46,7 @@ export const useJoinRoom = (
         ...prev,
         roomCode,
         roomId: roomId,
-        currentPlayer: newPlayer,
+        currentUser: newUser,
       }));
 
       // Fetch all participants after joining the room to get complete info including moderator status
@@ -55,9 +55,9 @@ export const useJoinRoom = (
       
     } catch (error) {
       console.error('Error joining room:', error);
-      const newPlayer: Player = {
+      const newUser: User = {
         id: Date.now().toString(),
-        name: playerName,
+        name: userName,
         isModerator: false,
         isProductOwner: false,
         hasVoted: false,
@@ -67,8 +67,8 @@ export const useJoinRoom = (
         ...prev,
         roomCode,
         roomId: roomCode,
-        players: [...prev.players, newPlayer],
-        currentPlayer: newPlayer,
+        users: [...prev.users, newUser],
+        currentUser: newUser,
       }));
     }
   }, [setGameState, fetchParticipants]);

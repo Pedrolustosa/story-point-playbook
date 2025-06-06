@@ -8,8 +8,8 @@ export const fibonacciCards = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, '?', '☕'];
 export const createInitialGameState = () => ({
   roomCode: '',
   roomId: '',
-  players: [],
-  currentPlayer: null,
+  users: [],
+  currentUser: null,
   currentStory: null,
   stories: [],
   votingInProgress: false,

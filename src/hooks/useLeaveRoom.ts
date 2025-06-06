@@ -9,8 +9,8 @@ export const useLeaveRoom = (
     setGameState(prev => ({
       roomCode: '',
       roomId: '',
-      players: [],
-      currentPlayer: null,
+      users: [],
+      currentUser: null,
       currentStory: null,
       stories: [],
       votingInProgress: false,

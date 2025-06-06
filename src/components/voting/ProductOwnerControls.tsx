@@ -6,9 +6,9 @@ import { useGame } from '../../contexts/GameContext';
 export const ProductOwnerControls: React.FC = () => {
   const { gameState, revealVotes, resetVoting } = useGame();
 
-  const isProductOwner = gameState.currentPlayer?.isProductOwner;
-  const votingPlayers = gameState.players.filter(p => !p.isProductOwner);
-  const allVotingPlayersVoted = votingPlayers.length > 0 && votingPlayers.every(p => p.hasVoted);
+  const isProductOwner = gameState.currentUser?.isProductOwner;
+  const votingUsers = gameState.users.filter(u => !u.isProductOwner);
+  const allVotingUsersVoted = votingUsers.length > 0 && votingUsers.every(u => u.hasVoted);
 
   if (!isProductOwner || !gameState.currentStory) {
     return null;
@@ -21,15 +21,15 @@ export const ProductOwnerControls: React.FC = () => {
         {!gameState.votesRevealed ? (
           <button
             onClick={revealVotes}
-            disabled={!allVotingPlayersVoted || gameState.revealCountdown !== null}
+            disabled={!allVotingUsersVoted || gameState.revealCountdown !== null}
             className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             <Eye className="w-4 h-4" />
             {gameState.revealCountdown !== null 
               ? 'Revelando...' 
-              : allVotingPlayersVoted 
+              : allVotingUsersVoted 
                 ? 'Revelar Votos' 
-                : `Aguardando votos (${votingPlayers.filter(p => p.hasVoted).length}/${votingPlayers.length})`
+                : `Aguardando votos (${votingUsers.filter(u => u.hasVoted).length}/${votingUsers.length})`
             }
           </button>
         ) : (

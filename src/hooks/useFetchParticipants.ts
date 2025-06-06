@@ -16,15 +16,19 @@ export const useFetchParticipants = (
       
       console.log('Fetched participants from API:', users);
       
-      // Only try to get room details if we have a roomCode
+      // Only try to get room details if we have a roomCode and it's different from roomId
       let room: RoomDto | null = null;
-      if (gameState.roomCode) {
-        console.log('Fetching room details using roomCode:', gameState.roomCode);
-        const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode);
-        room = 'data' in roomResponse ? roomResponse.data : roomResponse;
-        console.log('Room details:', room);
+      if (gameState.roomCode && gameState.roomCode !== roomId) {
+        try {
+          console.log('Fetching room details using roomCode:', gameState.roomCode);
+          const roomResponse = await ApiService.rooms.getRoom(gameState.roomCode);
+          room = 'data' in roomResponse ? roomResponse.data : roomResponse;
+          console.log('Room details:', room);
+        } catch (error) {
+          console.warn('Failed to fetch room details, continuing without moderator info:', error);
+        }
       } else {
-        console.warn('No roomCode available, skipping room details fetch');
+        console.log('Skipping room details fetch - using roomId for participants only');
       }
       
       const players: Player[] = users.map(user => ({

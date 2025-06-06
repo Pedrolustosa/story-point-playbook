@@ -10,20 +10,20 @@ export const useChat = () => {
   const [isPolling, setIsPolling] = useState(true);
   const queryClient = useQueryClient();
 
-  // Query para buscar mensagens - usando roomId em vez de roomCode
+  // Query para buscar mensagens - usando roomCode
   const { data: messages = [], isLoading } = useQuery({
-    queryKey: ['chat-messages', gameState.roomId],
-    queryFn: () => ChatService.getMessages(gameState.roomId),
-    enabled: !!gameState.roomId,
+    queryKey: ['chat-messages', gameState.roomCode],
+    queryFn: () => ChatService.getMessages(gameState.roomCode),
+    enabled: !!gameState.roomCode,
     refetchInterval: isPolling ? 2000 : false,
     select: (response) => response.data,
   });
 
-  // Mutation para enviar mensagem - usando roomId em vez de roomCode
+  // Mutation para enviar mensagem - usando roomCode
   const sendMessageMutation = useMutation({
-    mutationFn: (data: SendMessageDto) => ChatService.sendMessage(gameState.roomId, data),
+    mutationFn: (data: SendMessageDto) => ChatService.sendMessage(gameState.roomCode, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomId] });
+      queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomCode] });
     },
     onError: (error) => {
       console.error('Erro ao enviar mensagem:', error);

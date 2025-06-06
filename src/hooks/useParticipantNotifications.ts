@@ -1,5 +1,4 @@
 
-
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { User } from '../types/game';
@@ -34,7 +33,7 @@ export const useParticipantNotifications = (users: User[], currentUser: User | n
       console.log('User name:', user.name);
       console.log('User object keys:', Object.keys(user));
       
-      const userName = user.name || user.displayName || 'Usuário desconhecido';
+      const userName = user.name || 'Usuário desconhecido';
       console.log('Final userName for toast:', userName);
       
       toast.success(`${userName} entrou na sala!`, {
@@ -52,4 +51,3 @@ export const useParticipantNotifications = (users: User[], currentUser: User | n
     previousUsersRef.current = users;
   }, [users, currentUser]);
 };
-

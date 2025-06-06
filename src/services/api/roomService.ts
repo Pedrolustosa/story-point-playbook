@@ -10,7 +10,12 @@ export class RoomService {
   }
 
   static async joinRoom(roomCode: string, data: Omit<JoinRoomCommand, 'roomCode'>) {
-    return httpClient.post<UserDto>(`${this.BASE_PATH}/${roomCode}/join`, data);
+    // Include the roomCode in the request body as required by the API
+    const requestData: JoinRoomCommand = {
+      ...data,
+      roomCode
+    };
+    return httpClient.post<UserDto>(`${this.BASE_PATH}/${roomCode}/join`, requestData);
   }
 
   static async getRoom(roomCode: string) {

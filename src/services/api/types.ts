@@ -36,6 +36,7 @@ export interface RoomDto {
   id: string;
   code: string;
   name: string;
+  createdBy: UserDto; // Adicionar a propriedade createdBy
 }
 
 export interface StoryDto {

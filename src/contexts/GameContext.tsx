@@ -71,7 +71,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await ApiService.rooms.createRoom({
         name: `Sala de ${playerName}`,
-        createdBy: playerName, // Adicionar o campo obrigatório
+        createdBy: playerName,
         scale: VotingScale.Fibonacci,
         timeLimit: 0,
         autoReveal: false,
@@ -80,9 +80,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('Room created successfully:', response.data);
       
       const room = response.data;
+      
+      // Handle different API response structures
       const newPlayer: Player = {
-        id: room.createdBy.id, // Usar o ID retornado pela API
-        name: room.createdBy.name,
+        id: room.createdBy?.id || '1',
+        name: room.createdBy?.displayName || playerName,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
@@ -91,7 +93,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setGameState(prev => ({
         ...prev,
         roomCode: room.code,
-        roomId: room.id, // Usar o ID real da sala, não o código
+        roomId: room.id,
         players: [newPlayer],
         currentPlayer: newPlayer,
       }));

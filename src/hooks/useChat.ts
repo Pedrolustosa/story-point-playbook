@@ -10,7 +10,7 @@ export const useChat = () => {
   const { gameState } = useGame();
   const [isPolling, setIsPolling] = useState(true);
   const queryClient = useQueryClient();
-  const { handleError, handleApiResponse } = useErrorHandler();
+  const { handleError } = useErrorHandler();
 
   const isApiMode = gameState.roomId && gameState.roomId.length > 6;
 
@@ -19,16 +19,9 @@ export const useChat = () => {
     queryFn: async () => {
       try {
         const response = await ChatService.getMessages(gameState.roomId);
-        
-        // Só procede se a API retornar sucesso
-        const isSuccess = handleApiResponse(response);
-        if (!isSuccess) {
-          return [];
-        }
-        
         return 'data' in response ? response.data : response;
       } catch (error) {
-        handleError(error);
+        // Não mostra toast para erros de busca de mensagens (polling silencioso)
         throw error;
       }
     },
@@ -54,13 +47,14 @@ export const useChat = () => {
       
       return ChatService.sendMessage(gameState.roomId, data);
     },
-    onSuccess: (response) => {
-      const isSuccess = handleApiResponse(response);
-      if (isSuccess && isApiMode) {
+    onSuccess: () => {
+      // Remove toast de sucesso - atualização silenciosa
+      if (isApiMode) {
         queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomId] });
       }
     },
     onError: (error) => {
+      // Mostra toast apenas para erros de envio de mensagem
       handleError(error);
     },
   });

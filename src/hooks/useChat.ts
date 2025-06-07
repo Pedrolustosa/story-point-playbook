@@ -1,8 +1,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChatService, SendMessageRequest } from '../services/api/chatService';
-import { ChatMessageDto } from '../services/api/types';
+import { ChatService } from '../services/api/chatService';
+import { ChatMessageDto, SendMessageRequest } from '../services/api/types';
 import { useGame } from '../contexts/GameContext';
 import { useErrorHandler } from './useErrorHandler';
 

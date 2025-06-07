@@ -22,11 +22,11 @@ export const CreateRoom: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-orange-50 to-amber-50">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-orange-600 rounded-2xl mb-4">
               <Plus className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Criar Nova Sala</h1>
@@ -53,7 +53,7 @@ export const CreateRoom: React.FC = () => {
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value)}
                   placeholder="Digite seu nome"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                   maxLength={30}
                   disabled={isCreatingRoom}
                 />
@@ -72,7 +72,7 @@ export const CreateRoom: React.FC = () => {
                 <Button
                   onClick={handleCreateRoom}
                   disabled={!playerName.trim() || isCreatingRoom}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="flex-1 bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700"
                 >
                   {isCreatingRoom ? (
                     <>

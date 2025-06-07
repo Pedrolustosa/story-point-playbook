@@ -10,7 +10,7 @@ export const LandingFooter: React.FC = () => {
           {/* Logo e Descrição */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+              <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-600 to-orange-600 rounded-xl">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <span className="text-xl font-bold">Planning Poker</span>

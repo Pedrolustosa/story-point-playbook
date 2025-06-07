@@ -12,32 +12,33 @@ import { useSignalR } from '../hooks/useSignalR';
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [gameState, setGameState] = useState<GameState>(createInitialGameState());
+  const [gameState, setGameState] = useState<GameState>(() => createInitialGameState());
 
-  const { createRoom, joinRoom, leaveRoom, fetchParticipants, isCreatingRoom } = useRoomOperations(gameState, setGameState);
-  const { addStory, setCurrentStory } = useStoryOperations(gameState, setGameState);
-  const { castVote, revealVotes, resetVoting } = useVotingOperations(gameState, setGameState);
+  // Initialize room operations with proper dependency order
+  const roomOperations = useRoomOperations(gameState, setGameState);
+  const storyOperations = useStoryOperations(gameState, setGameState);
+  const votingOperations = useVotingOperations(gameState, setGameState);
 
   // Use participant notifications hook
   useParticipantNotifications(gameState.users, gameState.currentUser);
 
   // Use SignalR for real-time updates
-  const { connection, isConnected, connectionError } = useSignalR(gameState, fetchParticipants);
+  const { connection, isConnected, connectionError } = useSignalR(gameState, roomOperations.fetchParticipants);
 
   return (
     <GameContext.Provider
       value={{
         gameState,
-        createRoom,
-        joinRoom,
-        addStory,
-        setCurrentStory,
-        castVote,
-        revealVotes,
-        resetVoting,
-        leaveRoom,
-        fetchParticipants,
-        isCreatingRoom,
+        createRoom: roomOperations.createRoom,
+        joinRoom: roomOperations.joinRoom,
+        addStory: storyOperations.addStory,
+        setCurrentStory: storyOperations.setCurrentStory,
+        castVote: votingOperations.castVote,
+        revealVotes: votingOperations.revealVotes,
+        resetVoting: votingOperations.resetVoting,
+        leaveRoom: roomOperations.leaveRoom,
+        fetchParticipants: roomOperations.fetchParticipants,
+        isCreatingRoom: roomOperations.isCreatingRoom,
         signalRConnection: connection,
         isSignalRConnected: isConnected,
         connectionError,

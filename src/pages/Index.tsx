@@ -12,11 +12,13 @@ const AppContent: React.FC = () => {
   return gameState.roomCode ? <GameRoom /> : <HomePage />;
 };
 
-const Index = () => {
+const Index: React.FC = () => {
   return (
-    <GameProvider>
-      <AppContent />
-    </GameProvider>
+    <div>
+      <GameProvider>
+        <AppContent />
+      </GameProvider>
+    </div>
   );
 };
 

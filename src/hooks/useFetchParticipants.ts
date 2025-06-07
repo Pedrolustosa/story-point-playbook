@@ -13,33 +13,24 @@ export const useFetchParticipants = (
 
   const fetchParticipants = useCallback(async (roomId: string) => {
     if (!roomId) {
-      handleError('ID da sala é obrigatório', 'Validação');
+      handleError('ID da sala é obrigatório');
       return [];
     }
 
     try {
-      console.log('Fetching participants for room:', roomId);
       const response = await ApiService.rooms.getParticipants(roomId);
       const usersData: UserDto[] = 'data' in response ? response.data : response;
-      
-      console.log('Fetched participants from API:', usersData);
       
       if (!Array.isArray(usersData)) {
         throw new Error('Formato inválido de dados dos participantes');
       }
       
-      // Get current users to preserve voting state and moderator status
       const currentUsers = gameState.users;
       const currentUserId = gameState.currentUser?.id;
       
       const users: User[] = usersData.map(userData => {
-        // Find existing user to preserve their state
         const existingUser = currentUsers.find(u => u.id === userData.id);
-        
-        // Use name from the API response (using name property)
         const userName = (userData as any).name || existingUser?.name || 'Usuário sem nome';
-        
-        console.log(`Processing user ${userData.id}: API name="${(userData as any).name}", existing name="${existingUser?.name}", final name="${userName}"`);
         
         return {
           id: userData.id,
@@ -51,17 +42,10 @@ export const useFetchParticipants = (
         };
       });
       
-      console.log('Processed users with names:', users.map(u => ({ id: u.id, name: u.name })));
-      console.log('Current user ID:', currentUserId);
-      
       setGameState(prev => {
-        // Find the current user in the updated list
         const updatedCurrentUser = currentUserId ? 
           users.find(u => u.id === currentUserId) || prev.currentUser :
           prev.currentUser;
-          
-        console.log('Updated current user:', updatedCurrentUser);
-        console.log('Updating game state with new users list');
         
         return {
           ...prev,
@@ -72,8 +56,7 @@ export const useFetchParticipants = (
       
       return users;
     } catch (error) {
-      console.error('Error fetching participants:', error);
-      handleError(error, 'Erro ao buscar participantes');
+      handleError(error);
       return [];
     }
   }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed, handleError]);

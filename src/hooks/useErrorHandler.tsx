@@ -11,27 +11,22 @@ export interface AppError {
 }
 
 export const useErrorHandler = () => {
-  const handleError = useCallback((error: any, context?: string): AppError => {
-    console.error('Error occurred:', error, 'Context:', context);
-    
-    let errorMessage = 'Ocorreu um erro inesperado';
+  const handleError = useCallback((error: any, fallbackMessage?: string): AppError => {
+    let errorMessage = fallbackMessage || 'Ocorreu um erro inesperado';
     let errorCode: string | undefined;
     let shouldStopProcess = true;
     
-    // Parse different error types
     if (error?.message) {
       errorMessage = error.message;
     } else if (typeof error === 'string') {
       errorMessage = error;
     }
     
-    // Network errors
     if (error?.message?.includes('Network error') || error?.message?.includes('fetch')) {
       errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
       errorCode = 'NETWORK_ERROR';
     }
     
-    // API errors
     if (error?.status) {
       errorCode = `HTTP_${error.status}`;
       switch (error.status) {
@@ -53,17 +48,12 @@ export const useErrorHandler = () => {
       }
     }
     
-    // JSON parsing errors
     if (error?.message?.includes('JSON')) {
       errorMessage = 'Erro ao processar resposta do servidor.';
       errorCode = 'JSON_PARSE_ERROR';
     }
     
-    // Add context to message if provided
-    const finalMessage = context ? `${context}: ${errorMessage}` : errorMessage;
-    
-    // Show toast notification with custom styling
-    toast.error(finalMessage, {
+    toast.error(errorMessage, {
       duration: 6000,
       description: errorCode ? `Código: ${errorCode}` : undefined,
       icon: <XCircle className="h-5 w-5 text-red-500" />,
@@ -74,7 +64,7 @@ export const useErrorHandler = () => {
     });
     
     const appError: AppError = {
-      message: finalMessage,
+      message: errorMessage,
       code: errorCode,
       details: error?.stack || JSON.stringify(error),
       shouldStopProcess
@@ -94,6 +84,17 @@ export const useErrorHandler = () => {
       className: 'border-l-green-500',
     });
   }, []);
+  
+  const handleApiResponse = useCallback((response: any, fallbackMessage?: string) => {
+    if (response?.success === false) {
+      handleError(response, fallbackMessage);
+      return false;
+    } else if (response?.success === true && response?.message) {
+      handleSuccess(response.message);
+      return true;
+    }
+    return true;
+  }, [handleError, handleSuccess]);
   
   const handleWarning = useCallback((message: string, description?: string) => {
     toast.warning(message, {
@@ -122,6 +123,7 @@ export const useErrorHandler = () => {
   return {
     handleError,
     handleSuccess,
+    handleApiResponse,
     handleWarning,
     handleInfo
   };

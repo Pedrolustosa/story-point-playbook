@@ -1,4 +1,3 @@
-
 import { ENV } from '../../config/env';
 import { ApiResponse } from './types';
 
@@ -29,17 +28,12 @@ class HttpClient {
       },
     };
 
-    console.log(`Making ${config.method || 'GET'} request to:`, url);
-
     try {
       const response = await fetch(url, config);
-      console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('HTTP error response:', errorText);
         
-        // Try to parse error response as ApiResponse
         try {
           const errorData = JSON.parse(errorText);
           if (errorData.success === false) {
@@ -57,13 +51,9 @@ class HttpClient {
         throw error;
       }
 
-      // Check if response has content
       const responseText = await response.text();
-      console.log('Raw response text:', responseText);
       
-      // Handle empty response
       if (!responseText) {
-        console.log('Empty response received');
         return {
           success: true,
           message: 'Request completed successfully',
@@ -71,16 +61,12 @@ class HttpClient {
         };
       }
 
-      // Try to parse JSON
       try {
         const data: ApiResponse<T> = JSON.parse(responseText);
-        console.log('Parsed response data:', data);
         
-        // Ensure we return the full ApiResponse structure
         if (data.success !== undefined) {
           return data;
         } else {
-          // If response doesn't have ApiResponse structure, wrap it
           return {
             success: true,
             message: 'Success',
@@ -88,23 +74,17 @@ class HttpClient {
           };
         }
       } catch (parseError) {
-        console.error('Failed to parse JSON response:', parseError);
-        console.error('Response text that failed to parse:', responseText);
-        
         const error = new Error(`Invalid JSON response: ${(parseError as Error).message}`);
         (error as any).originalError = parseError;
         (error as any).responseText = responseText;
         throw error;
       }
     } catch (error) {
-      console.error('API request failed:', error);
       throw this.handleError(error);
     }
   }
 
   private handleError(error: any): ApiError {
-    console.log('Error details:', error);
-    
     if (error instanceof TypeError && error.message.includes('fetch')) {
       const networkError = {
         message: 'Network error - Unable to connect to server. Please check if the API is running and the URL is correct.',

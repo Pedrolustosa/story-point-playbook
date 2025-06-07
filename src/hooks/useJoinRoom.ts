@@ -10,51 +10,41 @@ export const useJoinRoom = (
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
   fetchParticipants: (roomId: string) => Promise<any[]>
 ) => {
-  const { handleError, handleSuccess } = useErrorHandler();
+  const { handleError, handleApiResponse } = useErrorHandler();
 
   const joinRoom = useCallback(async (roomCode: string, userName: string) => {
     if (!roomCode.trim()) {
-      handleError('Código da sala é obrigatório', 'Validação');
+      handleError('Código da sala é obrigatório');
       return;
     }
 
     if (!userName.trim()) {
-      handleError('Nome de usuário é obrigatório', 'Validação');
+      handleError('Nome de usuário é obrigatório');
       return;
     }
 
     try {
-      console.log('Joining room:', roomCode, 'as:', userName);
-      
       const response = await ApiService.rooms.joinRoom(roomCode, {
         displayName: userName,
         role: 'Developer',
       });
 
-      console.log('Joined room successfully:', response);
-
-      // Extract the actual user data from the response
       const userData: UserDto = 'data' in response ? response.data : response;
-      
-      console.log('Processed user data:', userData);
       
       if (!userData || !userData.id) {
         throw new Error('Resposta inválida da API: dados do usuário ausentes');
       }
 
-      // Use roomId from the user response instead of making another API call
       const roomId = userData.roomId;
-      console.log('Using roomId from join response:', roomId);
 
       if (!roomId) {
         throw new Error('ID da sala não encontrado na resposta da API');
       }
 
-      // Create the new user without knowing moderator status yet
       const newUser: User = {
         id: userData.id,
         name: userData.displayName,
-        isModerator: false, // Will be updated when fetching participants
+        isModerator: false,
         isProductOwner: userData.role === 'ProductOwner',
         hasVoted: false,
       };
@@ -66,20 +56,13 @@ export const useJoinRoom = (
         currentUser: newUser,
       }));
 
-      handleSuccess('Entrou na sala com sucesso!', `Bem-vindo, ${userName}!`);
-
-      // Fetch all participants after joining the room to get complete info including moderator status
-      console.log('Fetching participants after joining room');
+      handleApiResponse(response);
       await fetchParticipants(roomId);
       
     } catch (error) {
-      console.error('Error joining room:', error);
-      const appError = handleError(error, 'Erro ao entrar na sala');
+      const appError = handleError(error);
       
-      // Only fallback to local mode if it's a network error
       if (appError.code === 'NETWORK_ERROR') {
-        console.log('Falling back to local mode due to network error');
-        
         const newUser: User = {
           id: Date.now().toString(),
           name: userName,
@@ -95,11 +78,9 @@ export const useJoinRoom = (
           users: [...prev.users, newUser],
           currentUser: newUser,
         }));
-
-        handleSuccess('Entrou na sala em modo local', `Bem-vindo, ${userName}!`);
       }
     }
-  }, [setGameState, fetchParticipants, handleError, handleSuccess]);
+  }, [setGameState, fetchParticipants, handleError, handleApiResponse]);
 
   return { joinRoom };
 };

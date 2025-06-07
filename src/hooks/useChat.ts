@@ -10,20 +10,17 @@ export const useChat = () => {
   const { gameState } = useGame();
   const [isPolling, setIsPolling] = useState(true);
   const queryClient = useQueryClient();
-  const { handleError, handleSuccess } = useErrorHandler();
+  const { handleError, handleApiResponse } = useErrorHandler();
 
-  // Determinar se deve usar a API ou modo local
   const isApiMode = gameState.roomId && gameState.roomId.length > 6;
 
-  // Query para buscar mensagens - só funciona no modo API
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['chat-messages', gameState.roomId],
     queryFn: async () => {
       try {
-        console.log('Fetching messages for roomId:', gameState.roomId);
         return ChatService.getMessages(gameState.roomId);
       } catch (error) {
-        handleError(error, 'Erro ao carregar mensagens');
+        handleError(error);
         throw error;
       }
     },
@@ -31,7 +28,6 @@ export const useChat = () => {
     refetchInterval: isPolling && isApiMode ? 2000 : false,
     select: (response) => response.data,
     retry: (failureCount, error) => {
-      // Don't retry on certain errors
       if ((error as any)?.status === 404) {
         return false;
       }
@@ -39,12 +35,8 @@ export const useChat = () => {
     },
   });
 
-  // Mutation para enviar mensagem - só funciona no modo API
   const sendMessageMutation = useMutation({
     mutationFn: async (data: SendMessageRequest) => {
-      console.log('Sending message to roomId:', gameState.roomId);
-      console.log('Message data being sent:', data);
-      
       if (!isApiMode) {
         throw new Error('Chat API not available in local mode');
       }
@@ -55,43 +47,38 @@ export const useChat = () => {
       
       return ChatService.sendMessage(gameState.roomId, data);
     },
-    onSuccess: () => {
-      handleSuccess('Mensagem enviada com sucesso!');
+    onSuccess: (response) => {
+      handleApiResponse(response);
       if (isApiMode) {
         queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomId] });
       }
     },
     onError: (error) => {
-      console.error('Erro ao enviar mensagem:', error);
-      handleError(error, 'Erro ao enviar mensagem');
+      handleError(error);
     },
   });
 
   const sendMessage = useCallback((message: string) => {
     if (!message.trim()) {
-      handleError('Mensagem não pode estar vazia', 'Validação');
+      handleError('Mensagem não pode estar vazia');
       return;
     }
     
     if (!gameState.currentUser) {
-      handleError('Usuário não identificado', 'Validação');
+      handleError('Usuário não identificado');
       return;
     }
     
     if (!isApiMode) {
-      handleError('Chat não disponível no modo local', 'Funcionalidade não disponível');
+      handleError('Chat não disponível no modo local');
       return;
     }
-    
-    console.log('Current user:', gameState.currentUser);
-    console.log('User name:', gameState.currentUser.name);
     
     const messageData: SendMessageRequest = {
       UserName: gameState.currentUser.name,
       Message: message.trim()
     };
     
-    console.log('Prepared message data:', messageData);
     sendMessageMutation.mutate(messageData);
   }, [sendMessageMutation, gameState.currentUser, isApiMode, handleError]);
 

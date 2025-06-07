@@ -19,7 +19,6 @@ export const Chat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Controlar polling baseado no estado do chat
   useEffect(() => {
     if (isOpen && gameState.roomId && isApiMode) {
       startPolling();
@@ -29,14 +28,7 @@ export const Chat: React.FC = () => {
   }, [isOpen, gameState.roomId, isApiMode, startPolling, stopPolling]);
 
   const handleSendMessage = () => {
-    console.log('handleSendMessage called');
-    console.log('Message:', message);
-    console.log('Current user:', gameState.currentUser);
-    console.log('Is API mode:', isApiMode);
-    console.log('Is sending:', isSending);
-    
     if (!message.trim() || !gameState.currentUser || isSending || !isApiMode) {
-      console.log('Cannot send message - validation failed');
       return;
     }
     
@@ -52,11 +44,9 @@ export const Chat: React.FC = () => {
   };
 
   const formatTime = (timestamp: string) => {
-    // Se o timestamp já está no formato HH:MM:SS, usar diretamente
     if (timestamp.match(/^\d{2}:\d{2}:\d{2}$/)) {
       return timestamp;
     }
-    // Caso contrário, tentar fazer parse como Date
     try {
       return new Date(timestamp).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
@@ -67,15 +57,7 @@ export const Chat: React.FC = () => {
     }
   };
 
-  console.log('Chat component rendering with messages:', messages);
-
-  // Não mostrar o chat se não estiver em uma sala ou se não estiver no modo API
   if (!gameState.roomId || !gameState.currentUser || !isApiMode) {
-    console.log('Chat hidden - missing requirements:', {
-      roomId: gameState.roomId,
-      currentUser: gameState.currentUser,
-      isApiMode
-    });
     return null;
   }
 
@@ -92,7 +74,6 @@ export const Chat: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 right-6 w-80 h-96 bg-white rounded-lg shadow-xl border z-50 flex flex-col">
-      {/* Header */}
       <div className="bg-blue-600 text-white p-4 rounded-t-lg flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageCircle className="w-5 h-5" />
@@ -106,7 +87,6 @@ export const Chat: React.FC = () => {
         </button>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {isLoading ? (
           <div className="text-center text-gray-500 py-8">
@@ -119,7 +99,6 @@ export const Chat: React.FC = () => {
           </div>
         ) : (
           messages.map((msg, index) => {
-            console.log('Rendering message:', msg, 'index:', index);
             const isCurrentUser = msg.user === gameState.currentUser?.name || msg.user === gameState.currentUser?.id;
             
             return (
@@ -153,7 +132,6 @@ export const Chat: React.FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-4 border-t">
         <div className="flex gap-2">
           <input

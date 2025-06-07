@@ -61,14 +61,15 @@ export const useCreateRoom = (
         currentUser: newUser,
       }));
 
-      setTimeout(() => fetchParticipants(room.id), 1000);
+      // Removido o setTimeout que tentava buscar participantes
+      console.log('Sala criada com sucesso, não tentando buscar participantes (rota não existe)');
       
     } catch (error) {
       handleError(error);
     } finally {
       setIsCreatingRoom(false);
     }
-  }, [setGameState, fetchParticipants, handleError, handleApiResponse]);
+  }, [setGameState, handleError, handleApiResponse]);
 
   return { createRoom, isCreatingRoom };
 };

@@ -42,30 +42,12 @@ export const useSignalR = (
       // Set up event handlers
       connection.on('UserJoined', async (userId: string) => {
         console.log('SignalR: User joined event received:', userId);
-        console.log('SignalR: Current room data:', { roomId: gameState.roomId, roomCode: gameState.roomCode });
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching participants after user joined');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Successfully fetched participants after user joined');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants after user joined:', error);
-          }
-        }
+        console.log('SignalR: Não buscando participantes (rota não existe)');
       });
 
       connection.on('UserLeft', async (userId: string) => {
         console.log('SignalR: User left event received:', userId);
-        console.log('SignalR: Current room data:', { roomId: gameState.roomId, roomCode: gameState.roomCode });
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching participants after user left');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Successfully fetched participants after user left');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants after user left:', error);
-          }
-        }
+        console.log('SignalR: Não buscando participantes (rota não existe)');
       });
 
       connection.on('ParticipantCountUpdated', (count: number) => {
@@ -117,7 +99,7 @@ export const useSignalR = (
       setIsConnected(false);
       setConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
     }
-  }, [gameState.roomCode, gameState.roomId, gameState.currentUser, fetchParticipants, isConnected]);
+  }, [gameState.roomCode, gameState.roomId, gameState.currentUser, isConnected]);
 
   const disconnectFromHub = useCallback(async () => {
     if (connectionRef.current) {

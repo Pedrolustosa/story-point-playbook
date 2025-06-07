@@ -22,10 +22,6 @@ export class RoomService {
     return httpClient.get<RoomDto>(`${this.BASE_PATH}/${roomCode}`);
   }
 
-  static async getParticipants(roomId: string) {
-    return httpClient.get<UserDto[]>(`${this.BASE_PATH}/${roomId}/participants`);
-  }
-
   static async leaveRoom(roomCode: string, userId: string) {
     return httpClient.delete(`${this.BASE_PATH}/${roomCode}/users/${userId}`);
   }

@@ -16,7 +16,7 @@ export const HeroSection: React.FC = () => {
   };
 
   return (
-    <div className="text-center mb-16">
+    <div className="text-center">
       <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl mb-6">
         <Users className="w-10 h-10 text-white" />
       </div>
@@ -33,7 +33,7 @@ export const HeroSection: React.FC = () => {
         Estime histórias de usuário com sua equipe de forma rápida e eficiente.
       </p>
       
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
         <Button
           onClick={handleCreateRoom}
           size="lg"

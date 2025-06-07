@@ -3,7 +3,6 @@ import { useCallback, useState } from 'react';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto } from '../services/api/types';
 import { User, GameState } from '../types/game';
-import { generateRoomCode } from '../utils/gameUtils';
 import { useErrorHandler } from './useErrorHandler';
 
 export const useCreateRoom = (
@@ -33,10 +32,17 @@ export const useCreateRoom = (
       
       const response = await ApiService.rooms.createRoom(roomData);
       
+      // Só procede se a API retornar sucesso
+      const isSuccess = handleApiResponse(response);
+      if (!isSuccess) {
+        return;
+      }
+      
       const room: RoomDto = 'data' in response ? response.data : response;
       
       if (!room || !room.id) {
-        throw new Error('Resposta inválida da API: dados da sala ausentes');
+        handleError('Resposta inválida da API: dados da sala ausentes');
+        return;
       }
       
       const newUser: User = {
@@ -55,30 +61,10 @@ export const useCreateRoom = (
         currentUser: newUser,
       }));
 
-      handleApiResponse(response);
       setTimeout(() => fetchParticipants(room.id), 1000);
       
     } catch (error) {
-      const appError = handleError(error);
-      
-      if (appError.code === 'NETWORK_ERROR') {
-        const roomCode = generateRoomCode();
-        const newUser: User = {
-          id: '1',
-          name: userName,
-          isModerator: true,
-          isProductOwner: true,
-          hasVoted: false,
-        };
-
-        setGameState(prev => ({
-          ...prev,
-          roomCode,
-          roomId: roomCode,
-          users: [newUser],
-          currentUser: newUser,
-        }));
-      }
+      handleError(error);
     } finally {
       setIsCreatingRoom(false);
     }

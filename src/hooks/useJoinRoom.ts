@@ -29,16 +29,24 @@ export const useJoinRoom = (
         role: 'Developer',
       });
 
+      // Só procede se a API retornar sucesso
+      const isSuccess = handleApiResponse(response);
+      if (!isSuccess) {
+        return;
+      }
+
       const userData: UserDto = 'data' in response ? response.data : response;
       
       if (!userData || !userData.id) {
-        throw new Error('Resposta inválida da API: dados do usuário ausentes');
+        handleError('Resposta inválida da API: dados do usuário ausentes');
+        return;
       }
 
       const roomId = userData.roomId;
 
       if (!roomId) {
-        throw new Error('ID da sala não encontrado na resposta da API');
+        handleError('ID da sala não encontrado na resposta da API');
+        return;
       }
 
       const newUser: User = {
@@ -56,29 +64,10 @@ export const useJoinRoom = (
         currentUser: newUser,
       }));
 
-      handleApiResponse(response);
       await fetchParticipants(roomId);
       
     } catch (error) {
-      const appError = handleError(error);
-      
-      if (appError.code === 'NETWORK_ERROR') {
-        const newUser: User = {
-          id: Date.now().toString(),
-          name: userName,
-          isModerator: false,
-          isProductOwner: false,
-          hasVoted: false,
-        };
-
-        setGameState(prev => ({
-          ...prev,
-          roomCode,
-          roomId: roomCode,
-          users: [...prev.users, newUser],
-          currentUser: newUser,
-        }));
-      }
+      handleError(error);
     }
   }, [setGameState, fetchParticipants, handleError, handleApiResponse]);
 

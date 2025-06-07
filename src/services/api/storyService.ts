@@ -12,10 +12,6 @@ export class StoryService {
     return httpClient.get<StoryDto[]>(`/rooms/${roomId}/stories`);
   }
 
-  static async setCurrentStory(roomCode: string, storyId: string) {
-    return httpClient.put(`/rooms/${roomCode}/stories/${storyId}/set-current`);
-  }
-
   static async submitVote(command: SubmitVoteCommand) {
     return httpClient.post(`/stories/${command.storyId}/votes`, command);
   }

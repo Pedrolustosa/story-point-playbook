@@ -60,20 +60,8 @@ export const useStoryOperations = (
   }, [gameState.roomId, setGameState, handleError, handleApiResponse]);
 
   const setCurrentStory = useCallback(async (storyId: string) => {
-    try {
-      if (gameState.roomCode) {
-        const response = await ApiService.stories.setCurrentStory(gameState.roomCode, storyId);
-        
-        // Só procede se a API retornar sucesso
-        const isSuccess = handleApiResponse(response);
-        if (!isSuccess) {
-          return;
-        }
-      }
-    } catch (error) {
-      handleError(error);
-    }
-
+    console.log('setCurrentStory chamado, mas endpoint não existe. Funcionando apenas localmente.');
+    
     const story = gameState.stories.find(s => s.id === storyId);
     if (story) {
       setGameState(prev => ({
@@ -85,7 +73,7 @@ export const useStoryOperations = (
         users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
       }));
     }
-  }, [gameState.roomCode, gameState.stories, setGameState, handleError, handleApiResponse]);
+  }, [gameState.stories, setGameState]);
 
   return { addStory, setCurrentStory };
 };

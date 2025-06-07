@@ -19,17 +19,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const storyOperations = useStoryOperations(gameState, setGameState);
   const votingOperations = useVotingOperations(gameState, setGameState);
 
-  // Always call hooks - let them handle their own conditions internally
-  useParticipantNotifications(gameState.users, gameState.currentUser);
-
-  // Use SignalR for real-time updates - always call the hook but pass appropriate data
-  const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
-  const signalRResult = useSignalR(
-    shouldUseSignalR ? gameState : { ...gameState, roomCode: '', roomId: '', currentUser: null },
-    roomOperations.fetchParticipants
-  );
-
-  const contextValue: GameContextType = {
+  // Create a default context value first to ensure context is always available
+  const defaultContextValue: GameContextType = {
     gameState,
     createRoom: roomOperations.createRoom,
     joinRoom: roomOperations.joinRoom,
@@ -41,13 +32,39 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     leaveRoom: roomOperations.leaveRoom,
     fetchParticipants: roomOperations.fetchParticipants,
     isCreatingRoom: roomOperations.isCreatingRoom,
-    signalRConnection: shouldUseSignalR ? signalRResult.connection : null,
-    isSignalRConnected: shouldUseSignalR ? signalRResult.isConnected : false,
-    connectionError: shouldUseSignalR ? signalRResult.connectionError : null,
+    signalRConnection: null,
+    isSignalRConnected: false,
+    connectionError: null,
   };
 
+  // Use try-catch blocks for optional hooks to prevent provider failure
+  let finalContextValue = defaultContextValue;
+
+  try {
+    // Always call hooks - let them handle their own conditions internally
+    useParticipantNotifications(gameState.users, gameState.currentUser);
+
+    // Use SignalR for real-time updates - always call the hook but pass appropriate data
+    const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
+    const signalRResult = useSignalR(
+      shouldUseSignalR ? gameState : { ...gameState, roomCode: '', roomId: '', currentUser: null },
+      roomOperations.fetchParticipants
+    );
+
+    // Update context value with SignalR data if successful
+    finalContextValue = {
+      ...defaultContextValue,
+      signalRConnection: shouldUseSignalR ? signalRResult.connection : null,
+      isSignalRConnected: shouldUseSignalR ? signalRResult.isConnected : false,
+      connectionError: shouldUseSignalR ? signalRResult.connectionError : null,
+    };
+  } catch (error) {
+    console.error('Error in GameProvider hooks, using default context:', error);
+    // Continue with default context value
+  }
+
   return (
-    <GameContext.Provider value={contextValue}>
+    <GameContext.Provider value={finalContextValue}>
       {children}
     </GameContext.Provider>
   );

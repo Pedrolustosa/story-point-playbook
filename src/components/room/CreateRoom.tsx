@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Plus, ArrowLeft, Loader2 } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 import { Button } from '../ui/button';
@@ -7,9 +7,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { useNavigate } from 'react-router-dom';
 
 export const CreateRoom: React.FC = () => {
-  const { createRoom, isCreatingRoom } = useGame();
+  const { createRoom, isCreatingRoom, gameState } = useGame();
   const [playerName, setPlayerName] = useState('');
   const navigate = useNavigate();
+
+  // Redirecionar para a página principal quando a sala for criada
+  useEffect(() => {
+    if (gameState.roomCode && gameState.roomId) {
+      console.log('Sala criada com sucesso, redirecionando para a página principal');
+      navigate('/');
+    }
+  }, [gameState.roomCode, gameState.roomId, navigate]);
 
   const handleCreateRoom = () => {
     if (playerName.trim()) {

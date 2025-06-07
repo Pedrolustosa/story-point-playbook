@@ -2,11 +2,14 @@
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { Story, GameState } from '../types/game';
+import { useErrorHandler } from './useErrorHandler';
 
 export const useStoryOperations = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
+  const { handleError, handleApiResponse } = useErrorHandler();
+
   const addStory = useCallback(async (story: Omit<Story, 'id' | 'isCompleted'>) => {
     try {
       if (gameState.roomId) {
@@ -15,10 +18,23 @@ export const useStoryOperations = (
           description: story.description,
         });
 
+        // Só procede se a API retornar sucesso
+        const isSuccess = handleApiResponse(response);
+        if (!isSuccess) {
+          return;
+        }
+
+        const storyData = 'data' in response ? response.data : response;
+        
+        if (!storyData || !storyData.id) {
+          handleError('Resposta inválida da API: dados da história ausentes');
+          return;
+        }
+
         const newStory: Story = {
-          id: response.data.id,
-          title: response.data.title,
-          description: response.data.description,
+          id: storyData.id,
+          title: storyData.title,
+          description: storyData.description,
           isCompleted: false,
         };
 
@@ -28,7 +44,8 @@ export const useStoryOperations = (
         }));
       }
     } catch (error) {
-      console.error('Erro ao criar história:', error);
+      handleError(error);
+      // Fallback para modo local
       const newStory: Story = {
         ...story,
         id: Date.now().toString(),
@@ -40,15 +57,21 @@ export const useStoryOperations = (
         stories: [...prev.stories, newStory],
       }));
     }
-  }, [gameState.roomId, setGameState]);
+  }, [gameState.roomId, setGameState, handleError, handleApiResponse]);
 
   const setCurrentStory = useCallback(async (storyId: string) => {
     try {
       if (gameState.roomCode) {
-        await ApiService.stories.setCurrentStory(gameState.roomCode, storyId);
+        const response = await ApiService.stories.setCurrentStory(gameState.roomCode, storyId);
+        
+        // Só procede se a API retornar sucesso
+        const isSuccess = handleApiResponse(response);
+        if (!isSuccess) {
+          return;
+        }
       }
     } catch (error) {
-      console.error('Erro ao definir história atual:', error);
+      handleError(error);
     }
 
     const story = gameState.stories.find(s => s.id === storyId);
@@ -62,7 +85,7 @@ export const useStoryOperations = (
         users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
       }));
     }
-  }, [gameState.roomCode, gameState.stories, setGameState]);
+  }, [gameState.roomCode, gameState.stories, setGameState, handleError, handleApiResponse]);
 
   return { addStory, setCurrentStory };
 };

@@ -18,7 +18,15 @@ export const useChat = () => {
     queryKey: ['chat-messages', gameState.roomId],
     queryFn: async () => {
       try {
-        return ChatService.getMessages(gameState.roomId);
+        const response = await ChatService.getMessages(gameState.roomId);
+        
+        // Só procede se a API retornar sucesso
+        const isSuccess = handleApiResponse(response);
+        if (!isSuccess) {
+          return [];
+        }
+        
+        return 'data' in response ? response.data : response;
       } catch (error) {
         handleError(error);
         throw error;
@@ -26,7 +34,6 @@ export const useChat = () => {
     },
     enabled: !!gameState.roomId && isApiMode,
     refetchInterval: isPolling && isApiMode ? 2000 : false,
-    select: (response) => response.data,
     retry: (failureCount, error) => {
       if ((error as any)?.status === 404) {
         return false;
@@ -48,8 +55,8 @@ export const useChat = () => {
       return ChatService.sendMessage(gameState.roomId, data);
     },
     onSuccess: (response) => {
-      handleApiResponse(response);
-      if (isApiMode) {
+      const isSuccess = handleApiResponse(response);
+      if (isSuccess && isApiMode) {
         queryClient.invalidateQueries({ queryKey: ['chat-messages', gameState.roomId] });
       }
     },

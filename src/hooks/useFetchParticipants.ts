@@ -9,7 +9,7 @@ export const useFetchParticipants = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
-  const { handleError } = useErrorHandler();
+  const { handleError, handleApiResponse } = useErrorHandler();
 
   const fetchParticipants = useCallback(async (roomId: string) => {
     if (!roomId) {
@@ -19,10 +19,18 @@ export const useFetchParticipants = (
 
     try {
       const response = await ApiService.rooms.getParticipants(roomId);
+      
+      // Só procede se a API retornar sucesso
+      const isSuccess = handleApiResponse(response);
+      if (!isSuccess) {
+        return [];
+      }
+      
       const usersData: UserDto[] = 'data' in response ? response.data : response;
       
       if (!Array.isArray(usersData)) {
-        throw new Error('Formato inválido de dados dos participantes');
+        handleError('Formato inválido de dados dos participantes');
+        return [];
       }
       
       const currentUsers = gameState.users;
@@ -59,7 +67,7 @@ export const useFetchParticipants = (
       handleError(error);
       return [];
     }
-  }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed, handleError]);
+  }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed, handleError, handleApiResponse]);
 
   return { fetchParticipants };
 };

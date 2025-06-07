@@ -2,22 +2,31 @@
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { GameState } from '../types/game';
+import { useErrorHandler } from './useErrorHandler';
 
 export const useVotingOperations = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
+  const { handleError, handleApiResponse } = useErrorHandler();
+
   const castVote = useCallback(async (vote: number | string) => {
     if (!gameState.currentUser || gameState.currentUser.isProductOwner || !gameState.currentStory) return;
 
     try {
-      await ApiService.stories.submitVote({
+      const response = await ApiService.stories.submitVote({
         storyId: gameState.currentStory.id,
         userId: gameState.currentUser.id,
         value: vote.toString(),
       });
+
+      // Só procede se a API retornar sucesso
+      const isSuccess = handleApiResponse(response);
+      if (!isSuccess) {
+        return;
+      }
     } catch (error) {
-      console.error('Erro ao enviar voto:', error);
+      handleError(error);
     }
 
     setGameState(prev => ({
@@ -28,15 +37,21 @@ export const useVotingOperations = (
           : p
       ),
     }));
-  }, [gameState.currentUser, gameState.currentStory, setGameState]);
+  }, [gameState.currentUser, gameState.currentStory, setGameState, handleError, handleApiResponse]);
 
   const revealVotes = useCallback(async () => {
     try {
       if (gameState.currentStory) {
-        await ApiService.stories.revealVotes(gameState.currentStory.id);
+        const response = await ApiService.stories.revealVotes(gameState.currentStory.id);
+        
+        // Só procede se a API retornar sucesso
+        const isSuccess = handleApiResponse(response);
+        if (!isSuccess) {
+          return;
+        }
       }
     } catch (error) {
-      console.error('Erro ao revelar votos:', error);
+      handleError(error);
     }
 
     setGameState(prev => ({
@@ -67,7 +82,7 @@ export const useVotingOperations = (
         };
       });
     }, 1000);
-  }, [gameState.currentStory, setGameState]);
+  }, [gameState.currentStory, setGameState, handleError, handleApiResponse]);
 
   const resetVoting = useCallback(() => {
     setGameState(prev => ({

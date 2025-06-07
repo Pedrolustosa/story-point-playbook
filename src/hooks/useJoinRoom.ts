@@ -64,7 +64,15 @@ export const useJoinRoom = (
         currentUser: newUser,
       }));
 
-      await fetchParticipants(roomId);
+      // Buscar participantes imediatamente após entrar na sala
+      setTimeout(async () => {
+        try {
+          console.log('Buscando participantes após entrar na sala');
+          await fetchParticipants(roomId);
+        } catch (error) {
+          console.log('Erro ao buscar participantes (esperado se endpoint não existir):', error);
+        }
+      }, 500);
       
     } catch (error) {
       handleError(error);

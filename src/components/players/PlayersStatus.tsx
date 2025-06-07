@@ -1,24 +1,13 @@
 
 import React from 'react';
-import { Crown, CheckCircle, Clock, User, RefreshCw, Wifi, WifiOff, AlertCircle } from 'lucide-react';
+import { Crown, CheckCircle, Clock, User, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useGame } from '../../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
-  const { gameState, fetchParticipants, isSignalRConnected } = useGame();
-
-  const handleRefreshParticipants = async () => {
-    if (gameState.roomId) {
-      console.log('Manual refresh: Fetching participants for room:', gameState.roomId);
-      await fetchParticipants(gameState.roomId);
-    }
-  };
-
-  // Get connection error from SignalR hook if available
-  const signalRHook = useGame();
-  const connectionError = (signalRHook as any).connectionError;
+  const { gameState, isSignalRConnected, connectionError } = useGame();
 
   // Add debug logging for user names
   console.log('PlayersStatus - Current users:', gameState.users.map(u => ({ id: u.id, name: u.name })));
@@ -37,24 +26,15 @@ export const PlayersStatus: React.FC = () => {
             {isSignalRConnected ? (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-600 rounded-full" title="Atualizações automáticas ativas">
                 <Wifi className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">Auto</span>
+                <span className="text-xs font-medium">Tempo Real</span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-50 text-orange-600 rounded-full" title="Atualizações automáticas desconectadas">
                 <WifiOff className="w-3.5 h-3.5" />
-                <span className="text-xs font-medium">Manual</span>
+                <span className="text-xs font-medium">Offline</span>
               </div>
             )}
           </div>
-          {gameState.roomId && (
-            <button
-              onClick={handleRefreshParticipants}
-              className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:scale-105"
-              title="Atualizar lista de participantes"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
         {/* Connection Error Warning */}
@@ -64,6 +44,18 @@ export const PlayersStatus: React.FC = () => {
               <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
               <span className="text-sm text-red-800">
                 Erro de conexão: {connectionError}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Real-time status info */}
+        {isSignalRConnected && (
+          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <Wifi className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <span className="text-sm text-green-800">
+                Lista de participantes atualizada automaticamente em tempo real
               </span>
             </div>
           </div>

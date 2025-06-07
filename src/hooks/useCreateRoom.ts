@@ -61,15 +61,22 @@ export const useCreateRoom = (
         currentUser: newUser,
       }));
 
-      // Removido o setTimeout que tentava buscar participantes
-      console.log('Sala criada com sucesso, não tentando buscar participantes (rota não existe)');
+      // Buscar participantes após um pequeno delay para garantir que a sala esteja pronta
+      setTimeout(async () => {
+        try {
+          console.log('Buscando participantes iniciais da sala criada');
+          await fetchParticipants(room.id);
+        } catch (error) {
+          console.log('Erro ao buscar participantes iniciais (esperado se endpoint não existir):', error);
+        }
+      }, 1000);
       
     } catch (error) {
       handleError(error);
     } finally {
       setIsCreatingRoom(false);
     }
-  }, [setGameState, handleError, handleApiResponse]);
+  }, [setGameState, handleError, handleApiResponse, fetchParticipants]);
 
   return { createRoom, isCreatingRoom };
 };

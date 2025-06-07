@@ -15,7 +15,7 @@ export const LandingPage: React.FC = () => {
       
       <main>
         {/* Hero Section */}
-        <section className="pt-20 pb-16 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <section className="pt-20 pb-16 bg-gradient-to-br from-green-50 via-orange-50 to-amber-50">
           <div className="container mx-auto px-4 py-16">
             <HeroSection />
           </div>

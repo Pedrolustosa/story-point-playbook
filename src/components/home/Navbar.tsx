@@ -12,16 +12,16 @@ export const Navbar: React.FC = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-600 to-orange-600 rounded-xl">
               <Users className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">Planning Poker</span>
           </div>
           
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-600 hover:text-blue-600 transition-colors">Recursos</a>
-            <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 transition-colors">Como Funciona</a>
-            <a href="#testimonials" className="text-gray-600 hover:text-blue-600 transition-colors">Depoimentos</a>
+            <a href="#features" className="text-gray-600 hover:text-green-600 transition-colors">Recursos</a>
+            <a href="#how-it-works" className="text-gray-600 hover:text-green-600 transition-colors">Como Funciona</a>
+            <a href="#testimonials" className="text-gray-600 hover:text-green-600 transition-colors">Depoimentos</a>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -34,7 +34,7 @@ export const Navbar: React.FC = () => {
             </Button>
             <Button
               onClick={() => navigate('/create-room')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700"
             >
               Começar
             </Button>

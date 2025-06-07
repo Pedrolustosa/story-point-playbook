@@ -32,7 +32,7 @@ export const TestimonialsSection: React.FC = () => {
   ];
 
   return (
-    <section id="testimonials" className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <section id="testimonials" className="py-20 bg-gradient-to-br from-green-50 via-orange-50 to-amber-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -48,7 +48,7 @@ export const TestimonialsSection: React.FC = () => {
             <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="mb-4">
-                  <Quote className="w-8 h-8 text-blue-600 mb-4" />
+                  <Quote className="w-8 h-8 text-green-600 mb-4" />
                   <p className="text-gray-700 italic mb-4">"{testimonial.content}"</p>
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
@@ -58,7 +58,7 @@ export const TestimonialsSection: React.FC = () => {
                 </div>
                 
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-orange-600 rounded-full flex items-center justify-center text-white font-semibold text-sm mr-4">
                     {testimonial.avatar}
                   </div>
                   <div>

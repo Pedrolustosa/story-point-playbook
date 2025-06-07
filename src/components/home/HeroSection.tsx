@@ -17,13 +17,13 @@ export const HeroSection: React.FC = () => {
 
   return (
     <div className="text-center">
-      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl mb-6">
+      <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-green-600 to-orange-600 rounded-3xl mb-6">
         <Users className="w-10 h-10 text-white" />
       </div>
       
       <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
         Planning Poker
-        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
+        <span className="bg-gradient-to-r from-green-600 to-orange-600 bg-clip-text text-transparent block">
           Colaborativo
         </span>
       </h1>
@@ -37,7 +37,7 @@ export const HeroSection: React.FC = () => {
         <Button
           onClick={handleCreateRoom}
           size="lg"
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+          className="bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
         >
           <Plus className="w-5 h-5 mr-2" />
           Criar Nova Sala
@@ -47,7 +47,7 @@ export const HeroSection: React.FC = () => {
           onClick={handleJoinRoom}
           variant="outline"
           size="lg"
-          className="border-2 border-gray-300 hover:border-blue-300 text-gray-700 hover:text-blue-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-md transition-all duration-200"
+          className="border-2 border-gray-300 hover:border-green-300 text-gray-700 hover:text-green-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-md transition-all duration-200"
         >
           <ArrowRight className="w-5 h-5 mr-2" />
           Entrar em Sala

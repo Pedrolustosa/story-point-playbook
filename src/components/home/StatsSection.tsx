@@ -46,7 +46,7 @@ export const StatsSection: React.FC = () => {
           {stats.map((stat, index) => (
             <div key={index} className="text-center group">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300">
-                <stat.icon className="w-8 h-8 text-blue-600" />
+                <stat.icon className="w-8 h-8 text-green-600" />
               </div>
               <div className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</div>
               <div className="text-lg font-semibold text-gray-700 mb-2">{stat.label}</div>

@@ -32,8 +32,8 @@ export const FeaturesGrid: React.FC = () => {
       {features.map((feature, index) => (
         <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl mb-4 mx-auto">
-              <feature.icon className="w-6 h-6 text-blue-600" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-100 to-orange-100 rounded-xl mb-4 mx-auto">
+              <feature.icon className="w-6 h-6 text-green-600" />
             </div>
             <CardTitle className="text-lg font-semibold text-gray-900">
               {feature.title}

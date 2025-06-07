@@ -19,8 +19,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const storyOperations = useStoryOperations(gameState, setGameState);
   const votingOperations = useVotingOperations(gameState, setGameState);
 
-  // Create a default context value first to ensure context is always available
-  const defaultContextValue: GameContextType = {
+  // Create the context value with core operations
+  const contextValue: GameContextType = {
     gameState,
     createRoom: roomOperations.createRoom,
     joinRoom: roomOperations.joinRoom,
@@ -37,31 +37,31 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     connectionError: null,
   };
 
-  // Use try-catch blocks for optional hooks to prevent provider failure
-  let finalContextValue = defaultContextValue;
-
+  // Use optional hooks with error boundaries - these won't break the provider
   try {
-    // Always call hooks - let them handle their own conditions internally
     useParticipantNotifications(gameState.users, gameState.currentUser);
-
-    // Use SignalR for real-time updates - always call the hook but pass appropriate data
-    const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
-    const signalRResult = useSignalR(
-      shouldUseSignalR ? gameState : { ...gameState, roomCode: '', roomId: '', currentUser: null },
-      roomOperations.fetchParticipants
-    );
-
-    // Update context value with SignalR data if successful
-    finalContextValue = {
-      ...defaultContextValue,
-      signalRConnection: shouldUseSignalR ? signalRResult.connection : null,
-      isSignalRConnected: shouldUseSignalR ? signalRResult.isConnected : false,
-      connectionError: shouldUseSignalR ? signalRResult.connectionError : null,
-    };
   } catch (error) {
-    console.error('Error in GameProvider hooks, using default context:', error);
-    // Continue with default context value
+    console.error('Error in useParticipantNotifications:', error);
   }
+
+  // SignalR integration with error handling
+  let signalRData = { connection: null, isConnected: false, connectionError: null };
+  try {
+    const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
+    if (shouldUseSignalR) {
+      signalRData = useSignalR(gameState, roomOperations.fetchParticipants);
+    }
+  } catch (error) {
+    console.error('Error in useSignalR:', error);
+  }
+
+  // Update context value with SignalR data
+  const finalContextValue: GameContextType = {
+    ...contextValue,
+    signalRConnection: signalRData.connection,
+    isSignalRConnected: signalRData.isConnected,
+    connectionError: signalRData.connectionError,
+  };
 
   return (
     <GameContext.Provider value={finalContextValue}>

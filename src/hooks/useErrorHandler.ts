@@ -1,6 +1,7 @@
 
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 export interface AppError {
   message: string;
@@ -61,10 +62,15 @@ export const useErrorHandler = () => {
     // Add context to message if provided
     const finalMessage = context ? `${context}: ${errorMessage}` : errorMessage;
     
-    // Show toast notification
+    // Show toast notification with custom styling
     toast.error(finalMessage, {
-      duration: 5000,
+      duration: 6000,
       description: errorCode ? `Código: ${errorCode}` : undefined,
+      icon: <XCircle className="h-5 w-5 text-red-500" />,
+      style: {
+        borderLeft: '4px solid #ef4444',
+      },
+      className: 'border-l-red-500',
     });
     
     const appError: AppError = {
@@ -79,21 +85,44 @@ export const useErrorHandler = () => {
   
   const handleSuccess = useCallback((message: string, description?: string) => {
     toast.success(message, {
-      duration: 3000,
-      description
+      duration: 4000,
+      description,
+      icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+      style: {
+        borderLeft: '4px solid #22c55e',
+      },
+      className: 'border-l-green-500',
     });
   }, []);
   
   const handleWarning = useCallback((message: string, description?: string) => {
     toast.warning(message, {
+      duration: 5000,
+      description,
+      icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+      style: {
+        borderLeft: '4px solid #eab308',
+      },
+      className: 'border-l-yellow-500',
+    });
+  }, []);
+
+  const handleInfo = useCallback((message: string, description?: string) => {
+    toast.info(message, {
       duration: 4000,
-      description
+      description,
+      icon: <Info className="h-5 w-5 text-blue-500" />,
+      style: {
+        borderLeft: '4px solid #3b82f6',
+      },
+      className: 'border-l-blue-500',
     });
   }, []);
   
   return {
     handleError,
     handleSuccess,
-    handleWarning
+    handleWarning,
+    handleInfo
   };
 };

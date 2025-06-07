@@ -1,11 +1,6 @@
 
 import { httpClient } from './httpClient';
-import { ChatMessageDto } from './types';
-
-export interface SendMessageRequest {
-  UserName: string;
-  Message: string;
-}
+import { ChatMessageDto, SendMessageRequest } from './types';
 
 export class ChatService {
   static async getMessages(roomId: string) {
@@ -13,6 +8,6 @@ export class ChatService {
   }
 
   static async sendMessage(roomId: string, data: SendMessageRequest) {
-    return httpClient.post<ChatMessageDto>(`/rooms/${roomId}/chat`, data);
+    return httpClient.post(`/rooms/${roomId}/chat`, data);
   }
 }

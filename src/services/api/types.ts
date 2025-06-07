@@ -26,6 +26,11 @@ export interface SubmitVoteCommand {
   value: string;
 }
 
+export interface SendMessageRequest {
+  UserName: string;
+  Message: string;
+}
+
 export interface ChatMessageDto {
   user: string;
   message: string;
@@ -56,6 +61,14 @@ export interface UserDto {
 export interface VoteEntryDto {
   user: string;
   value: string;
+}
+
+// Resposta padrão da API
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  errors?: string[];
 }
 
 export enum VotingScale {

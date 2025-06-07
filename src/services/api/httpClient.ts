@@ -1,12 +1,6 @@
 
 import { ENV } from '../../config/env';
-
-export interface ApiResponse<T = any> {
-  data: T;
-  success: boolean;
-  message?: string;
-  errors?: string[];
-}
+import { ApiResponse } from './types';
 
 export interface ApiError {
   message: string;
@@ -45,6 +39,19 @@ class HttpClient {
         const errorText = await response.text();
         console.error('HTTP error response:', errorText);
         
+        // Try to parse error response as ApiResponse
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.success === false) {
+            const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            (error as any).status = response.status;
+            (error as any).errors = errorData.errors;
+            throw error;
+          }
+        } catch (parseError) {
+          // If parsing fails, create a generic error
+        }
+        
         const error = new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         (error as any).status = response.status;
         throw error;
@@ -58,17 +65,28 @@ class HttpClient {
       if (!responseText) {
         console.log('Empty response received');
         return {
-          data: null as T,
           success: true,
-          message: 'Request completed successfully'
+          message: 'Request completed successfully',
+          data: null as T
         };
       }
 
       // Try to parse JSON
       try {
-        const data = JSON.parse(responseText);
+        const data: ApiResponse<T> = JSON.parse(responseText);
         console.log('Parsed response data:', data);
-        return data;
+        
+        // Ensure we return the full ApiResponse structure
+        if (data.success !== undefined) {
+          return data;
+        } else {
+          // If response doesn't have ApiResponse structure, wrap it
+          return {
+            success: true,
+            message: 'Success',
+            data: data as T
+          };
+        }
       } catch (parseError) {
         console.error('Failed to parse JSON response:', parseError);
         console.error('Response text that failed to parse:', responseText);
@@ -99,6 +117,7 @@ class HttpClient {
       return {
         message: error.message || 'An unexpected error occurred',
         status: error.status,
+        errors: error.errors
       };
     }
 

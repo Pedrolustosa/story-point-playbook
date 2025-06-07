@@ -1,5 +1,6 @@
 
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../services/api';
 import { VotingScale, RoomDto } from '../services/api/types';
 import { User, GameState } from '../types/game';
@@ -12,6 +13,7 @@ export const useCreateRoom = (
 ) => {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const { handleError, handleApiResponse } = useErrorHandler();
+  const navigate = useNavigate();
 
   const createRoom = useCallback(async (userName: string) => {
     if (!userName.trim()) {
@@ -70,13 +72,16 @@ export const useCreateRoom = (
           console.log('Erro ao buscar participantes iniciais (esperado se endpoint não existir):', error);
         }
       }, 1000);
+
+      // Redirecionar para a página principal onde a sala será exibida
+      navigate('/');
       
     } catch (error) {
       handleError(error);
     } finally {
       setIsCreatingRoom(false);
     }
-  }, [setGameState, handleError, handleApiResponse, fetchParticipants]);
+  }, [setGameState, handleError, handleApiResponse, fetchParticipants, navigate]);
 
   return { createRoom, isCreatingRoom };
 };

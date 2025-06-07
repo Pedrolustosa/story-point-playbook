@@ -39,13 +39,15 @@ class HttpClient {
 
     try {
       const response = await fetch(url, config);
-
       console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error('HTTP error response:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        
+        const error = new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        (error as any).status = response.status;
+        throw error;
       }
 
       // Check if response has content
@@ -70,7 +72,11 @@ class HttpClient {
       } catch (parseError) {
         console.error('Failed to parse JSON response:', parseError);
         console.error('Response text that failed to parse:', responseText);
-        throw new Error(`Invalid JSON response: ${parseError.message}`);
+        
+        const error = new Error(`Invalid JSON response: ${(parseError as Error).message}`);
+        (error as any).originalError = parseError;
+        (error as any).responseText = responseText;
+        throw error;
       }
     } catch (error) {
       console.error('API request failed:', error);
@@ -82,9 +88,17 @@ class HttpClient {
     console.log('Error details:', error);
     
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      return {
+      const networkError = {
         message: 'Network error - Unable to connect to server. Please check if the API is running and the URL is correct.',
         status: 0,
+      };
+      return networkError;
+    }
+
+    if (error.status) {
+      return {
+        message: error.message || 'An unexpected error occurred',
+        status: error.status,
       };
     }
 

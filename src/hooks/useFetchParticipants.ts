@@ -1,21 +1,32 @@
 
-
 import { useCallback } from 'react';
 import { ApiService } from '../services/api';
 import { UserDto } from '../services/api/types';
 import { User, GameState } from '../types/game';
+import { useErrorHandler } from './useErrorHandler';
 
 export const useFetchParticipants = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
+  const { handleError } = useErrorHandler();
+
   const fetchParticipants = useCallback(async (roomId: string) => {
+    if (!roomId) {
+      handleError('ID da sala é obrigatório', 'Validação');
+      return [];
+    }
+
     try {
       console.log('Fetching participants for room:', roomId);
       const response = await ApiService.rooms.getParticipants(roomId);
       const usersData: UserDto[] = 'data' in response ? response.data : response;
       
       console.log('Fetched participants from API:', usersData);
+      
+      if (!Array.isArray(usersData)) {
+        throw new Error('Formato inválido de dados dos participantes');
+      }
       
       // Get current users to preserve voting state and moderator status
       const currentUsers = gameState.users;
@@ -62,10 +73,10 @@ export const useFetchParticipants = (
       return users;
     } catch (error) {
       console.error('Error fetching participants:', error);
+      handleError(error, 'Erro ao buscar participantes');
       return [];
     }
-  }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed]);
+  }, [setGameState, gameState.users, gameState.currentUser?.id, gameState.votesRevealed, handleError]);
 
   return { fetchParticipants };
 };
-

@@ -8,6 +8,13 @@ export const useParticipantNotifications = (users: User[], currentUser: User | n
   const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
+    // Early return if we don't have the required data
+    if (!users || users.length === 0 || !currentUser) {
+      previousUsersRef.current = users || [];
+      isInitialLoadRef.current = true;
+      return;
+    }
+
     // Skip notifications on initial load
     if (isInitialLoadRef.current) {
       isInitialLoadRef.current = false;

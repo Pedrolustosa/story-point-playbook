@@ -19,13 +19,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const storyOperations = useStoryOperations(gameState, setGameState);
   const votingOperations = useVotingOperations(gameState, setGameState);
 
-  // Use participant notifications hook only when we have users and current user
-  const shouldUseNotifications = gameState.users.length > 0 && gameState.currentUser;
-  if (shouldUseNotifications) {
-    useParticipantNotifications(gameState.users, gameState.currentUser);
-  }
+  // Always call hooks - let them handle their own conditions internally
+  useParticipantNotifications(gameState.users, gameState.currentUser);
 
-  // Use SignalR for real-time updates only when we have room data
+  // Use SignalR for real-time updates - always call the hook but pass appropriate data
   const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
   const signalRResult = useSignalR(
     shouldUseSignalR ? gameState : { ...gameState, roomCode: '', roomId: '', currentUser: null },

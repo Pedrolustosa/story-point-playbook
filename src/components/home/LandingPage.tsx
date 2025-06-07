@@ -1,26 +1,19 @@
 
-import React, { useState } from 'react';
-import { Users, Plus, ArrowRight, Loader2, Star, Clock, Shield, Zap } from 'lucide-react';
-import { useGame } from '../../contexts/GameContext';
+import React from 'react';
+import { Users, Plus, ArrowRight, Star, Clock, Shield, Zap } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { useNavigate } from 'react-router-dom';
 
 export const LandingPage: React.FC = () => {
-  const { createRoom, joinRoom, isCreatingRoom } = useGame();
-  const [playerName, setPlayerName] = useState('');
-  const [roomCode, setRoomCode] = useState('');
-  const [mode, setMode] = useState<'create' | 'join' | null>(null);
+  const navigate = useNavigate();
 
   const handleCreateRoom = () => {
-    if (playerName.trim()) {
-      createRoom(playerName.trim());
-    }
+    navigate('/create-room');
   };
 
   const handleJoinRoom = () => {
-    if (playerName.trim() && roomCode.trim()) {
-      joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
-    }
+    navigate('/join-room');
   };
 
   const features = [
@@ -69,7 +62,7 @@ export const LandingPage: React.FC = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button
-              onClick={() => setMode('create')}
+              onClick={handleCreateRoom}
               size="lg"
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
             >
@@ -78,7 +71,7 @@ export const LandingPage: React.FC = () => {
             </Button>
             
             <Button
-              onClick={() => setMode('join')}
+              onClick={handleJoinRoom}
               variant="outline"
               size="lg"
               className="border-2 border-gray-300 hover:border-blue-300 text-gray-700 hover:text-blue-600 px-8 py-4 text-lg font-semibold rounded-xl hover:shadow-md transition-all duration-200"
@@ -109,87 +102,6 @@ export const LandingPage: React.FC = () => {
             </Card>
           ))}
         </div>
-
-        {/* Action Modal */}
-        {mode && (
-          <div className="max-w-md mx-auto">
-            <Card className="shadow-2xl border-0 bg-white">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl font-bold text-gray-900">
-                  {mode === 'create' ? 'Criar Nova Sala' : 'Entrar em Sala'}
-                </CardTitle>
-                <CardDescription className="text-gray-600">
-                  {mode === 'create' 
-                    ? 'Configure sua sessão de planning poker' 
-                    : 'Junte-se a uma sessão existente'
-                  }
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                {mode === 'join' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Código da sala
-                    </label>
-                    <input
-                      type="text"
-                      value={roomCode}
-                      onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                      placeholder="Ex: ABC123"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 uppercase text-center text-lg font-mono"
-                      maxLength={6}
-                    />
-                  </div>
-                )}
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seu nome
-                  </label>
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
-                    placeholder="Digite seu nome"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    maxLength={30}
-                    disabled={isCreatingRoom}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    onClick={() => setMode(null)}
-                    variant="outline"
-                    className="flex-1"
-                    disabled={isCreatingRoom}
-                  >
-                    Voltar
-                  </Button>
-                  <Button
-                    onClick={mode === 'create' ? handleCreateRoom : handleJoinRoom}
-                    disabled={
-                      !playerName.trim() || 
-                      (mode === 'join' && !roomCode.trim()) ||
-                      isCreatingRoom
-                    }
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    {isCreatingRoom ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        Criando...
-                      </>
-                    ) : (
-                      mode === 'create' ? 'Criar Sala' : 'Entrar'
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* Footer */}
         <div className="text-center mt-16 text-gray-500">

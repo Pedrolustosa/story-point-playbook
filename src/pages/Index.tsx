@@ -14,11 +14,9 @@ const AppContent: React.FC = () => {
 
 const Index: React.FC = () => {
   return (
-    <div>
-      <GameProvider>
-        <AppContent />
-      </GameProvider>
-    </div>
+    <GameProvider>
+      <AppContent />
+    </GameProvider>
   );
 };
 

@@ -51,66 +51,35 @@ export const useJoinRoom = (
         return;
       }
 
-      // Primeiro, atualiza o estado com as informações básicas
+      // Criar o usuário atual imediatamente
+      const currentUser: User = {
+        id: userData.id,
+        name: userData.displayName,
+        isModerator: false,
+        isProductOwner: userData.role === 'ProductOwner',
+        hasVoted: false,
+      };
+
+      // Atualiza o estado imediatamente para permitir redirecionamento
+      console.log('Atualizando estado para permitir redirecionamento imediato');
       setGameState(prev => ({
         ...prev,
         roomCode,
         roomId: roomId,
-        users: [],
-        currentUser: null,
+        currentUser: currentUser,
+        users: [currentUser], // Adiciona pelo menos o usuário atual
       }));
 
-      console.log('Estado básico atualizado, aguardando para buscar participantes...');
-
-      // Buscar participantes com delay maior para evitar conflito com SignalR
+      // Buscar outros participantes com delay menor para não conflitar com SignalR
       setTimeout(async () => {
         try {
-          console.log('Buscando participantes após entrar na sala:', roomId);
-          const participants = await fetchParticipants(roomId);
-          
-          const currentUserFromApi = participants.find(p => 
-            p.id === userData.id || p.name === userData.displayName
-          );
-          
-          if (currentUserFromApi) {
-            console.log('Usuário atual encontrado nos participantes:', currentUserFromApi);
-            setGameState(prev => ({
-              ...prev,
-              currentUser: currentUserFromApi,
-            }));
-          } else {
-            console.log('Usuário atual não encontrado, criando localmente');
-            const fallbackUser: User = {
-              id: userData.id,
-              name: userData.displayName,
-              isModerator: false,
-              isProductOwner: userData.role === 'ProductOwner',
-              hasVoted: false,
-            };
-            
-            setGameState(prev => ({
-              ...prev,
-              currentUser: fallbackUser,
-              users: [...prev.users, fallbackUser],
-            }));
-          }
+          console.log('Buscando participantes completos após entrar na sala:', roomId);
+          await fetchParticipants(roomId);
         } catch (error) {
           console.error('Erro ao buscar participantes após entrar:', error);
-          const fallbackUser: User = {
-            id: userData.id,
-            name: userData.displayName,
-            isModerator: false,
-            isProductOwner: userData.role === 'ProductOwner',
-            hasVoted: false,
-          };
-          
-          setGameState(prev => ({
-            ...prev,
-            currentUser: fallbackUser,
-            users: [fallbackUser],
-          }));
+          // Mantém pelo menos o usuário atual se a busca falhar
         }
-      }, 3000); // Aumentei o delay para 3 segundos para dar tempo ao SignalR
+      }, 1500); // Reduzido para 1.5 segundos
       
     } catch (error) {
       console.error('Erro ao entrar na sala:', error);

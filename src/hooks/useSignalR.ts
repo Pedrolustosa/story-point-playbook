@@ -13,8 +13,8 @@ export const useSignalR = (
   const [shouldConnect, setShouldConnect] = useState(false);
   const participantsRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Controle de debounce para atualizações de participantes
-  const scheduleParticipantsRefresh = useCallback((delay: number = 3000) => {
+  // Controle de debounce para atualizações de participantes com delay maior
+  const scheduleParticipantsRefresh = useCallback((delay: number = 5000) => {
     if (participantsRefreshTimeoutRef.current) {
       clearTimeout(participantsRefreshTimeoutRef.current);
     }
@@ -64,25 +64,25 @@ export const useSignalR = (
         .configureLogging(LogLevel.Information)
         .build();
 
-      // Eventos SignalR com debounce para evitar muitas requisições
+      // Eventos SignalR com debounce maior para evitar conflitos
       connection.on('UserJoined', async (userData: any) => {
         console.log('SignalR: User joined event received:', userData);
-        scheduleParticipantsRefresh(2000); // Debounce de 2 segundos
+        scheduleParticipantsRefresh(3000); // Debounce de 3 segundos
       });
 
       connection.on('UserLeft', async (userId: string) => {
         console.log('SignalR: User left event received:', userId);
-        scheduleParticipantsRefresh(2000); // Debounce de 2 segundos
+        scheduleParticipantsRefresh(3000); // Debounce de 3 segundos
       });
 
       connection.on('ParticipantCountUpdated', async (count: number) => {
         console.log('SignalR: Participant count updated:', count);
-        scheduleParticipantsRefresh(3000); // Debounce maior para count updates
+        scheduleParticipantsRefresh(5000); // Debounce maior para count updates
       });
 
       connection.on('ParticipantsUpdated', async (participants: any[]) => {
         console.log('SignalR: Participants list updated directly:', participants.length, 'participantes');
-        scheduleParticipantsRefresh(1000); // Debounce menor para updates diretos
+        scheduleParticipantsRefresh(2000); // Debounce menor para updates diretos
       });
 
       // Handle connection state changes
@@ -116,7 +116,7 @@ export const useSignalR = (
             console.log('SignalR: Rejoined room after reconnection');
             
             // Agenda uma atualização após reconexão (com delay maior)
-            scheduleParticipantsRefresh(5000);
+            scheduleParticipantsRefresh(7000);
           } catch (error) {
             console.error('SignalR: Error rejoining room after reconnection:', error);
             setConnectionError(`Failed to rejoin room: ${error}`);
@@ -129,10 +129,15 @@ export const useSignalR = (
       setIsConnected(true);
       setConnectionError(null);
 
-      // Join the room
+      // Join the room apenas se não temos participantes ainda
       if (gameState.roomCode && gameState.roomId && gameState.currentUser) {
         await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
         console.log('SignalR: Joined room successfully:', gameState.roomCode, 'with user:', gameState.currentUser.id);
+        
+        // Só agenda atualização de participantes se não temos dados ainda
+        if (gameState.users.length <= 1) {
+          scheduleParticipantsRefresh(6000); // Delay maior para primeira busca via SignalR
+        }
       }
 
       connectionRef.current = connection;
@@ -173,7 +178,10 @@ export const useSignalR = (
   useEffect(() => {
     if (shouldConnect) {
       console.log('SignalR: Room data available, attempting to connect');
-      connectToHub();
+      // Adiciona delay antes de conectar para evitar conflito com join inicial
+      setTimeout(() => {
+        connectToHub();
+      }, 2000);
     }
 
     return () => {

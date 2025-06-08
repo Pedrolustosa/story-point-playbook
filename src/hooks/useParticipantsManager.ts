@@ -16,9 +16,9 @@ export const useParticipantsManager = (
   const cacheRef = useRef<{ roomId: string; participants: User[]; timestamp: number } | null>(null);
   
   // Configurações de controle de rate limiting
-  const DEBOUNCE_DELAY = 2000; // 2 segundos de debounce
-  const MIN_FETCH_INTERVAL = 3000; // Mínimo 3 segundos entre requisições
-  const CACHE_DURATION = 5000; // Cache válido por 5 segundos
+  const DEBOUNCE_DELAY = 3000; // 3 segundos de debounce
+  const MIN_FETCH_INTERVAL = 4000; // Mínimo 4 segundos entre requisições
+  const CACHE_DURATION = 6000; // Cache válido por 6 segundos
 
   const fetchParticipantsImmediate = useCallback(async (roomId: string): Promise<User[]> => {
     if (!roomId) {
@@ -63,12 +63,23 @@ export const useParticipantsManager = (
       }
 
       console.log('Dados dos participantes da API:', participantsData.length, 'participantes');
+      console.log('Dados brutos dos participantes:', participantsData);
 
       const participants: User[] = participantsData.map(participant => {
         const isProductOwner = participant.role === 'ProductOwner';
+        const displayName = participant.displayName || participant.name || 'Usuário Anônimo';
+        
+        console.log('Processando participante:', {
+          id: participant.id,
+          displayName: participant.displayName,
+          name: participant.name,
+          finalName: displayName,
+          role: participant.role
+        });
+        
         return {
           id: participant.id,
-          name: participant.displayName || 'Nome não disponível',
+          name: displayName,
           isModerator: isProductOwner,
           isProductOwner: isProductOwner,
           hasVoted: false,
@@ -83,6 +94,7 @@ export const useParticipantsManager = (
       };
 
       console.log('Participantes convertidos:', participants.length);
+      console.log('Participantes finais:', participants);
 
       setGameState(prev => ({
         ...prev,
@@ -96,7 +108,7 @@ export const useParticipantsManager = (
       // Em caso de erro 429, aumenta o intervalo
       if (error && typeof error === 'object' && 'status' in error && error.status === 429) {
         console.warn('Rate limit atingido - aguardando mais tempo para próxima requisição');
-        lastFetchTimeRef.current = now + 10000; // Bloqueia por 10 segundos adicionais
+        lastFetchTimeRef.current = now + 15000; // Bloqueia por 15 segundos adicionais
       }
       
       return gameState.users;

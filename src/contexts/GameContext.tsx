@@ -19,7 +19,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const storyOperations = useStoryOperations(gameState, setGameState);
   const votingOperations = useVotingOperations(gameState, setGameState);
 
-  // Create the context value with core operations
+  // Always call useSignalR - it will handle its own conditional logic internally
+  const signalRData = useSignalR(gameState, roomOperations.fetchParticipants);
+
+  // Always call useParticipantNotifications - it will handle its own conditions
+  useParticipantNotifications(gameState.users, gameState.currentUser);
+
+  // Create the final context value
   const contextValue: GameContextType = {
     gameState,
     createRoom: roomOperations.createRoom,
@@ -32,39 +38,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     leaveRoom: roomOperations.leaveRoom,
     fetchParticipants: roomOperations.fetchParticipants,
     isCreatingRoom: roomOperations.isCreatingRoom,
-    signalRConnection: null,
-    isSignalRConnected: false,
-    connectionError: null,
-  };
-
-  // Use optional hooks with error boundaries - these won't break the provider
-  try {
-    useParticipantNotifications(gameState.users, gameState.currentUser);
-  } catch (error) {
-    console.error('Error in useParticipantNotifications:', error);
-  }
-
-  // SignalR integration with error handling
-  let signalRData = { connection: null, isConnected: false, connectionError: null };
-  try {
-    const shouldUseSignalR = gameState.roomCode && gameState.roomId && gameState.currentUser;
-    if (shouldUseSignalR) {
-      signalRData = useSignalR(gameState, roomOperations.fetchParticipants);
-    }
-  } catch (error) {
-    console.error('Error in useSignalR:', error);
-  }
-
-  // Update context value with SignalR data
-  const finalContextValue: GameContextType = {
-    ...contextValue,
     signalRConnection: signalRData.connection,
     isSignalRConnected: signalRData.isConnected,
     connectionError: signalRData.connectionError,
   };
 
   return (
-    <GameContext.Provider value={finalContextValue}>
+    <GameContext.Provider value={contextValue}>
       {children}
     </GameContext.Provider>
   );

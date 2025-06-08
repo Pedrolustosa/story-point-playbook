@@ -24,6 +24,11 @@ export const PlayersStatus: React.FC = () => {
     });
   });
 
+  // Filter unique users by ID to prevent duplicate keys
+  const uniqueUsers = gameState.users.filter((user, index, self) => 
+    index === self.findIndex(u => u.id === user.id)
+  );
+
   return (
     <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50">
       <CardHeader className="pb-4">
@@ -33,7 +38,7 @@ export const PlayersStatus: React.FC = () => {
               Participantes
             </CardTitle>
             <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
-              {gameState.users.length}
+              {uniqueUsers.length}
             </Badge>
             {isSignalRConnected ? (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 text-green-600 rounded-full" title="Atualizações automáticas ativas">
@@ -74,7 +79,7 @@ export const PlayersStatus: React.FC = () => {
         )}
 
         {/* Debug info */}
-        {gameState.users.length === 0 && gameState.roomCode && (
+        {uniqueUsers.length === 0 && gameState.roomCode && (
           <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0" />
@@ -88,12 +93,12 @@ export const PlayersStatus: React.FC = () => {
 
       <CardContent className="pt-0">
         <div className="space-y-3">
-          {gameState.users.map((user) => {
+          {uniqueUsers.map((user) => {
             console.log(`Renderizando usuário: ID=${user.id}, Name="${user.name}", isPO=${user.isProductOwner}, isMod=${user.isModerator}`);
             
             return (
               <div
-                key={user.id}
+                key={`user-${user.id}`}
                 className="group relative overflow-hidden bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 ease-out"
               >
                 {/* Background gradient for PO */}
@@ -187,7 +192,7 @@ export const PlayersStatus: React.FC = () => {
             );
           })}
           
-          {gameState.users.length === 0 && (
+          {uniqueUsers.length === 0 && (
             <div className="text-center py-12">
               <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-sm">
                 <User className="w-10 h-10 text-gray-400" />

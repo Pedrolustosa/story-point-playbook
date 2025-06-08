@@ -11,6 +11,26 @@ export const useSignalR = (
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [shouldConnect, setShouldConnect] = useState(false);
+  const participantsRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Controle de debounce para atualizações de participantes
+  const scheduleParticipantsRefresh = useCallback((delay: number = 3000) => {
+    if (participantsRefreshTimeoutRef.current) {
+      clearTimeout(participantsRefreshTimeoutRef.current);
+    }
+
+    participantsRefreshTimeoutRef.current = setTimeout(async () => {
+      if (gameState.roomId) {
+        console.log('SignalR: Atualizando participantes (debounced)');
+        try {
+          await fetchParticipants(gameState.roomId);
+          console.log('SignalR: Participantes atualizados com sucesso');
+        } catch (error) {
+          console.error('SignalR: Erro ao atualizar participantes:', error);
+        }
+      }
+    }, delay);
+  }, [gameState.roomId, fetchParticipants]);
 
   // Always call useEffect for checking connection conditions
   useEffect(() => {
@@ -44,61 +64,25 @@ export const useSignalR = (
         .configureLogging(LogLevel.Information)
         .build();
 
-      // Set up event handlers for real-time participant updates
+      // Eventos SignalR com debounce para evitar muitas requisições
       connection.on('UserJoined', async (userData: any) => {
         console.log('SignalR: User joined event received:', userData);
-        
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching updated participants after user joined');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Participants refreshed successfully after user joined');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants after user joined:', error);
-          }
-        }
+        scheduleParticipantsRefresh(2000); // Debounce de 2 segundos
       });
 
       connection.on('UserLeft', async (userId: string) => {
         console.log('SignalR: User left event received:', userId);
-        
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching updated participants after user left');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Participants refreshed successfully after user left');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants after user left:', error);
-          }
-        }
+        scheduleParticipantsRefresh(2000); // Debounce de 2 segundos
       });
 
       connection.on('ParticipantCountUpdated', async (count: number) => {
         console.log('SignalR: Participant count updated:', count);
-        
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching updated participants after count change');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Participants refreshed successfully after count change');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants after count change:', error);
-          }
-        }
+        scheduleParticipantsRefresh(3000); // Debounce maior para count updates
       });
 
       connection.on('ParticipantsUpdated', async (participants: any[]) => {
-        console.log('SignalR: Participants list updated directly:', participants);
-        
-        if (gameState.roomId) {
-          console.log('SignalR: Fetching from API to maintain consistency');
-          try {
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Participants refreshed successfully from direct update');
-          } catch (error) {
-            console.error('SignalR: Error fetching participants from direct update:', error);
-          }
-        }
+        console.log('SignalR: Participants list updated directly:', participants.length, 'participantes');
+        scheduleParticipantsRefresh(1000); // Debounce menor para updates diretos
       });
 
       // Handle connection state changes
@@ -107,6 +91,12 @@ export const useSignalR = (
         setIsConnected(false);
         if (error) {
           setConnectionError(error.message || 'Connection closed with error');
+        }
+        
+        // Limpa timeout pendente
+        if (participantsRefreshTimeoutRef.current) {
+          clearTimeout(participantsRefreshTimeoutRef.current);
+          participantsRefreshTimeoutRef.current = null;
         }
       });
 
@@ -125,8 +115,8 @@ export const useSignalR = (
             await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
             console.log('SignalR: Rejoined room after reconnection');
             
-            await fetchParticipants(gameState.roomId);
-            console.log('SignalR: Participants refreshed after reconnection');
+            // Agenda uma atualização após reconexão (com delay maior)
+            scheduleParticipantsRefresh(5000);
           } catch (error) {
             console.error('SignalR: Error rejoining room after reconnection:', error);
             setConnectionError(`Failed to rejoin room: ${error}`);
@@ -152,9 +142,15 @@ export const useSignalR = (
       setIsConnected(false);
       setConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
     }
-  }, [shouldConnect, isConnected, gameState, fetchParticipants]);
+  }, [shouldConnect, isConnected, gameState, scheduleParticipantsRefresh]);
 
   const disconnectFromHub = useCallback(async () => {
+    // Limpa timeout pendente
+    if (participantsRefreshTimeoutRef.current) {
+      clearTimeout(participantsRefreshTimeoutRef.current);
+      participantsRefreshTimeoutRef.current = null;
+    }
+
     if (connectionRef.current) {
       try {
         if (gameState.roomCode && gameState.roomId && gameState.currentUser) {

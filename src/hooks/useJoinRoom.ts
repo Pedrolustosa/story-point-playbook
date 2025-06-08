@@ -31,7 +31,6 @@ export const useJoinRoom = (
         role: 'Developer',
       });
 
-      // Só procede se a API retornar sucesso
       const isSuccess = handleApiResponse(response);
       if (!isSuccess) {
         return;
@@ -57,19 +56,18 @@ export const useJoinRoom = (
         ...prev,
         roomCode,
         roomId: roomId,
-        users: [], // Limpa a lista para buscar da API
-        currentUser: null, // Será definido após buscar os participantes
+        users: [],
+        currentUser: null,
       }));
 
-      console.log('Estado básico atualizado, buscando participantes...');
+      console.log('Estado básico atualizado, aguardando para buscar participantes...');
 
-      // Buscar participantes imediatamente após entrar na sala
+      // Buscar participantes com delay maior para evitar conflito com SignalR
       setTimeout(async () => {
         try {
           console.log('Buscando participantes após entrar na sala:', roomId);
           const participants = await fetchParticipants(roomId);
           
-          // Encontra o usuário atual na lista de participantes
           const currentUserFromApi = participants.find(p => 
             p.id === userData.id || p.name === userData.displayName
           );
@@ -82,7 +80,6 @@ export const useJoinRoom = (
             }));
           } else {
             console.log('Usuário atual não encontrado, criando localmente');
-            // Fallback: criar usuário local se não encontrado na API
             const fallbackUser: User = {
               id: userData.id,
               name: userData.displayName,
@@ -99,7 +96,6 @@ export const useJoinRoom = (
           }
         } catch (error) {
           console.error('Erro ao buscar participantes após entrar:', error);
-          // Fallback: criar usuário local em caso de erro
           const fallbackUser: User = {
             id: userData.id,
             name: userData.displayName,
@@ -114,7 +110,7 @@ export const useJoinRoom = (
             users: [fallbackUser],
           }));
         }
-      }, 500);
+      }, 3000); // Aumentei o delay para 3 segundos para dar tempo ao SignalR
       
     } catch (error) {
       console.error('Erro ao entrar na sala:', error);

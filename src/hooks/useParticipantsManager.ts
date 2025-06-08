@@ -1,4 +1,3 @@
-
 import { useCallback, useRef, useState } from 'react';
 import { User, GameState } from '../types/game';
 import { useErrorHandler } from './useErrorHandler';
@@ -67,12 +66,11 @@ export const useParticipantsManager = (
 
       const participants: User[] = participantsData.map(participant => {
         const isProductOwner = participant.role === 'ProductOwner';
-        const displayName = participant.displayName || participant.name || 'Usuário Anônimo';
+        const displayName = participant.displayName || 'Usuário Anônimo';
         
         console.log('Processando participante:', {
           id: participant.id,
           displayName: participant.displayName,
-          name: participant.name,
           finalName: displayName,
           role: participant.role
         });

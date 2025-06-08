@@ -13,7 +13,7 @@ export const useFetchParticipants = (
 
   const fetchParticipants = useCallback(async (roomId: string) => {
     if (!roomId) {
-      handleError('ID da sala é obrigatório');
+      console.log('ID da sala é obrigatório para buscar participantes');
       return [];
     }
 
@@ -22,8 +22,9 @@ export const useFetchParticipants = (
       const response = await ApiService.rooms.getParticipants(roomId);
 
       // Verifica se a resposta foi bem-sucedida
-      const isSuccess = handleApiResponse(response);
+      const isSuccess = handleApiResponse(response, false); // false = não mostrar toast de erro para falhas esperadas
       if (!isSuccess) {
+        console.log('Falha ao buscar participantes da API, mantendo lista atual');
         return gameState.users;
       }
 
@@ -34,30 +35,45 @@ export const useFetchParticipants = (
         return gameState.users;
       }
 
-      // Converte os dados da API para o formato interno
-      const participants: User[] = participantsData.map(participant => ({
-        id: participant.id,
-        name: participant.displayName,
-        isModerator: participant.role === 'ProductOwner',
-        isProductOwner: participant.role === 'ProductOwner',
-        hasVoted: false, // Será atualizado pelo sistema de votação
-      }));
+      console.log('Dados brutos dos participantes da API:', participantsData);
 
-      console.log('Participantes obtidos da API:', participants);
+      // Converte os dados da API para o formato interno
+      const participants: User[] = participantsData.map(participant => {
+        const isProductOwner = participant.role === 'ProductOwner';
+        const user: User = {
+          id: participant.id,
+          name: participant.displayName || 'Nome não disponível',
+          isModerator: isProductOwner, // PO é sempre moderador
+          isProductOwner: isProductOwner,
+          hasVoted: false, // Será atualizado pelo sistema de votação
+        };
+        console.log('Participante convertido:', user);
+        return user;
+      });
+
+      console.log('Participantes convertidos:', participants);
+      console.log('Total de participantes:', participants.length);
+      console.log('Product Owners encontrados:', participants.filter(p => p.isProductOwner).length);
 
       // Atualiza o estado com os participantes
-      setGameState(prev => ({
-        ...prev,
-        users: participants,
-      }));
+      setGameState(prev => {
+        console.log('Atualizando estado - participantes anteriores:', prev.users.length);
+        console.log('Atualizando estado - novos participantes:', participants.length);
+        
+        return {
+          ...prev,
+          users: participants,
+        };
+      });
 
       return participants;
     } catch (error) {
       console.error('Erro ao buscar participantes:', error);
-      handleError(error);
+      // Em caso de erro, não mostra toast para não spam o usuário
+      // handleError(error);
       return gameState.users;
     }
-  }, [gameState.users, handleError, handleApiResponse, setGameState]);
+  }, [gameState.users, handleApiResponse, setGameState]);
 
   return { fetchParticipants };
 };

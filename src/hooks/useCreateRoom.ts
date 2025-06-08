@@ -20,6 +20,7 @@ export const useCreateRoom = (
     }
     
     setIsCreatingRoom(true);
+    console.log('Criando sala para:', userName);
     
     try {
       const roomData = {
@@ -39,39 +40,79 @@ export const useCreateRoom = (
       }
       
       const room: RoomDto = 'data' in response ? response.data : response;
+      console.log('Sala criada com sucesso:', room);
       
       if (!room || !room.id) {
         handleError('Resposta inválida da API: dados da sala ausentes');
         return;
       }
       
-      const newUser: User = {
-        id: room.createdBy?.id || userName,
-        name: room.createdBy?.displayName || userName,
-        isModerator: true,
-        isProductOwner: true,
-        hasVoted: false,
-      };
-
+      // Primeiro, atualiza o estado com as informações básicas da sala
       setGameState(prev => ({
         ...prev,
         roomCode: room.code,
         roomId: room.id,
-        users: [newUser],
-        currentUser: newUser,
+        users: [], // Limpa a lista de usuários para buscar da API
+        currentUser: null, // Será definido após buscar os participantes
       }));
 
-      // Buscar participantes após um pequeno delay para garantir que a sala esteja pronta
+      console.log('Estado da sala atualizado, buscando participantes...');
+
+      // Buscar participantes imediatamente após criar a sala
       setTimeout(async () => {
         try {
-          console.log('Buscando participantes iniciais da sala criada');
-          await fetchParticipants(room.id);
+          console.log('Buscando participantes da sala criada:', room.id);
+          const participants = await fetchParticipants(room.id);
+          
+          // Encontra o usuário atual (criador da sala) na lista de participantes
+          const currentUserFromApi = participants.find(p => 
+            p.name === userName || p.id === userName || p.isModerator || p.isProductOwner
+          );
+          
+          if (currentUserFromApi) {
+            console.log('Usuário atual encontrado nos participantes:', currentUserFromApi);
+            setGameState(prev => ({
+              ...prev,
+              currentUser: currentUserFromApi,
+            }));
+          } else {
+            console.log('Usuário atual não encontrado, criando localmente');
+            // Fallback: criar usuário local se não encontrado na API
+            const fallbackUser: User = {
+              id: room.createdBy?.id || userName,
+              name: room.createdBy?.displayName || userName,
+              isModerator: true,
+              isProductOwner: true,
+              hasVoted: false,
+            };
+            
+            setGameState(prev => ({
+              ...prev,
+              currentUser: fallbackUser,
+              users: [fallbackUser, ...prev.users],
+            }));
+          }
         } catch (error) {
-          console.log('Erro ao buscar participantes iniciais (esperado se endpoint não existir):', error);
+          console.error('Erro ao buscar participantes iniciais:', error);
+          // Fallback: criar usuário local em caso de erro
+          const fallbackUser: User = {
+            id: room.createdBy?.id || userName,
+            name: room.createdBy?.displayName || userName,
+            isModerator: true,
+            isProductOwner: true,
+            hasVoted: false,
+          };
+          
+          setGameState(prev => ({
+            ...prev,
+            currentUser: fallbackUser,
+            users: [fallbackUser],
+          }));
         }
       }, 1000);
       
     } catch (error) {
+      console.error('Erro ao criar sala:', error);
       handleError(error);
     } finally {
       setIsCreatingRoom(false);

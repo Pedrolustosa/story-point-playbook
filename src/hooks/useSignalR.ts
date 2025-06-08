@@ -42,41 +42,66 @@ export const useSignalR = (
       // Set up event handlers for real-time participant updates
       connection.on('UserJoined', async (userData: any) => {
         console.log('SignalR: User joined event received:', userData);
+        console.log('SignalR: Current room ID:', gameState.roomId);
         
         // Refresh participants list automatically
         if (gameState.roomId) {
           console.log('SignalR: Fetching updated participants after user joined');
-          await fetchParticipants(gameState.roomId);
+          try {
+            await fetchParticipants(gameState.roomId);
+            console.log('SignalR: Participants refreshed successfully after user joined');
+          } catch (error) {
+            console.error('SignalR: Error fetching participants after user joined:', error);
+          }
         }
       });
 
       connection.on('UserLeft', async (userId: string) => {
         console.log('SignalR: User left event received:', userId);
+        console.log('SignalR: Current room ID:', gameState.roomId);
         
         // Refresh participants list automatically
         if (gameState.roomId) {
           console.log('SignalR: Fetching updated participants after user left');
-          await fetchParticipants(gameState.roomId);
+          try {
+            await fetchParticipants(gameState.roomId);
+            console.log('SignalR: Participants refreshed successfully after user left');
+          } catch (error) {
+            console.error('SignalR: Error fetching participants after user left:', error);
+          }
         }
       });
 
       connection.on('ParticipantCountUpdated', async (count: number) => {
         console.log('SignalR: Participant count updated:', count);
+        console.log('SignalR: Current participants count in state:', gameState.users.length);
         
         // Refresh participants list when count changes
         if (gameState.roomId) {
           console.log('SignalR: Fetching updated participants after count change');
-          await fetchParticipants(gameState.roomId);
+          try {
+            await fetchParticipants(gameState.roomId);
+            console.log('SignalR: Participants refreshed successfully after count change');
+          } catch (error) {
+            console.error('SignalR: Error fetching participants after count change:', error);
+          }
         }
       });
 
       connection.on('ParticipantsUpdated', async (participants: any[]) => {
         console.log('SignalR: Participants list updated directly:', participants);
+        console.log('SignalR: Received participants count:', participants.length);
         
         // If we receive the participants directly, we could update the state here
         // For now, we'll still fetch from API to maintain consistency
         if (gameState.roomId) {
-          await fetchParticipants(gameState.roomId);
+          console.log('SignalR: Fetching from API to maintain consistency');
+          try {
+            await fetchParticipants(gameState.roomId);
+            console.log('SignalR: Participants refreshed successfully from direct update');
+          } catch (error) {
+            console.error('SignalR: Error fetching participants from direct update:', error);
+          }
         }
       });
 
@@ -104,7 +129,9 @@ export const useSignalR = (
             console.log('SignalR: Rejoined room after reconnection');
             
             // Refresh participants after reconnection
+            console.log('SignalR: Fetching participants after reconnection');
             await fetchParticipants(gameState.roomId);
+            console.log('SignalR: Participants refreshed after reconnection');
           } catch (error) {
             console.error('SignalR: Error rejoining room after reconnection:', error);
             setConnectionError(`Failed to rejoin room: ${error}`);
@@ -119,7 +146,7 @@ export const useSignalR = (
 
       // Join the room
       await connection.invoke('JoinRoom', gameState.roomCode, gameState.roomId, gameState.currentUser.id);
-      console.log('SignalR: Joined room successfully:', gameState.roomCode);
+      console.log('SignalR: Joined room successfully:', gameState.roomCode, 'with user:', gameState.currentUser.id);
 
       connectionRef.current = connection;
 
@@ -153,6 +180,9 @@ export const useSignalR = (
   useEffect(() => {
     if (gameState.roomCode && gameState.roomId && gameState.currentUser) {
       console.log('SignalR: Room data available, attempting to connect');
+      console.log('SignalR: Room code:', gameState.roomCode);
+      console.log('SignalR: Room ID:', gameState.roomId);
+      console.log('SignalR: Current user:', gameState.currentUser);
       connectToHub();
     }
 

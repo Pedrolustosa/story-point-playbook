@@ -9,8 +9,20 @@ import { useGame } from '../../contexts/GameContext';
 export const PlayersStatus: React.FC = () => {
   const { gameState, isSignalRConnected, connectionError } = useGame();
 
-  // Add debug logging for user names
-  console.log('PlayersStatus - Current users:', gameState.users.map(u => ({ id: u.id, name: u.name })));
+  // Log detalhado para debug
+  console.log('PlayersStatus - gameState completo:', gameState);
+  console.log('PlayersStatus - users array:', gameState.users);
+  console.log('PlayersStatus - currentUser:', gameState.currentUser);
+  console.log('PlayersStatus - Total de usuários:', gameState.users.length);
+  
+  gameState.users.forEach((user, index) => {
+    console.log(`PlayersStatus - Usuário ${index}:`, {
+      id: user.id,
+      name: user.name,
+      isModerator: user.isModerator,
+      isProductOwner: user.isProductOwner
+    });
+  });
 
   return (
     <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50">
@@ -60,12 +72,24 @@ export const PlayersStatus: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Debug info */}
+        {gameState.users.length === 0 && gameState.roomCode && (
+          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0" />
+              <span className="text-sm text-yellow-800">
+                Sala ativa ({gameState.roomCode}) mas nenhum participante carregado. Verificando...
+              </span>
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="pt-0">
         <div className="space-y-3">
           {gameState.users.map((user) => {
-            console.log(`Rendering user: ID=${user.id}, Name="${user.name}"`);
+            console.log(`Renderizando usuário: ID=${user.id}, Name="${user.name}", isPO=${user.isProductOwner}, isMod=${user.isModerator}`);
             
             return (
               <div
@@ -74,7 +98,11 @@ export const PlayersStatus: React.FC = () => {
               >
                 <div className="flex items-center gap-3">
                   <Avatar className="w-10 h-10 ring-2 ring-gray-100 group-hover:ring-blue-200 transition-all duration-200">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
+                    <AvatarFallback className={`font-semibold text-sm ${
+                      user.isProductOwner 
+                        ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-white' 
+                        : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
+                    }`}>
                       {(user.name || 'U').charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -91,7 +119,7 @@ export const PlayersStatus: React.FC = () => {
                       )}
                     </div>
                     
-                    {user.isModerator && (
+                    {user.isProductOwner && (
                       <div className="flex items-center gap-1.5 mt-1">
                         <Crown className="w-4 h-4 text-yellow-500" />
                         <span className="text-xs font-semibold text-yellow-700">
@@ -99,11 +127,19 @@ export const PlayersStatus: React.FC = () => {
                         </span>
                       </div>
                     )}
+                    
+                    {user.isModerator && !user.isProductOwner && (
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-xs font-semibold text-blue-700">
+                          Moderador
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  {gameState.votingInProgress && !user.isModerator && (
+                  {gameState.votingInProgress && !user.isProductOwner && (
                     user.hasVoted ? (
                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full">
                         <CheckCircle className="w-4 h-4" />
@@ -132,8 +168,15 @@ export const PlayersStatus: React.FC = () => {
               <div className="w-16 h-16 bg-gray-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
                 <User className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-gray-500 font-medium">Nenhum participante ainda</p>
-              <p className="text-gray-400 text-sm mt-1">Compartilhe o código da sala para convidar pessoas</p>
+              <p className="text-gray-500 font-medium">
+                {gameState.roomCode ? 'Carregando participantes...' : 'Nenhum participante ainda'}
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                {gameState.roomCode 
+                  ? 'Por favor, aguarde...' 
+                  : 'Compartilhe o código da sala para convidar pessoas'
+                }
+              </p>
             </div>
           )}
         </div>

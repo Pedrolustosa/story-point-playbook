@@ -22,7 +22,7 @@ export const useFetchParticipants = (
       const response = await ApiService.rooms.getParticipants(roomId);
 
       // Verifica se a resposta foi bem-sucedida
-      const isSuccess = handleApiResponse(response, false); // false = não mostrar toast de erro para falhas esperadas
+      const isSuccess = handleApiResponse(response);
       if (!isSuccess) {
         console.log('Falha ao buscar participantes da API, mantendo lista atual');
         return gameState.users;

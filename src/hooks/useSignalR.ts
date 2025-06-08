@@ -12,6 +12,7 @@ export const useSignalR = (
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [shouldConnect, setShouldConnect] = useState(false);
   const participantsRefreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isConnectingRef = useRef(false);
 
   // Controle de debounce para atualizações de participantes com delay maior
   const scheduleParticipantsRefresh = useCallback((delay: number = 5000) => {
@@ -47,9 +48,12 @@ export const useSignalR = (
   }, [gameState.roomCode, gameState.roomId, gameState.currentUser]);
 
   const connectToHub = useCallback(async () => {
-    if (!shouldConnect || (connectionRef.current && isConnected)) {
+    if (!shouldConnect || isConnectingRef.current || (connectionRef.current && isConnected)) {
+      console.log('SignalR: Skipping connection - shouldConnect:', shouldConnect, 'isConnecting:', isConnectingRef.current, 'isConnected:', isConnected);
       return;
     }
+
+    isConnectingRef.current = true;
 
     try {
       setConnectionError(null);
@@ -89,6 +93,7 @@ export const useSignalR = (
       connection.onclose((error) => {
         console.log('SignalR: Connection closed', error);
         setIsConnected(false);
+        isConnectingRef.current = false;
         if (error) {
           setConnectionError(error.message || 'Connection closed with error');
         }
@@ -146,6 +151,8 @@ export const useSignalR = (
       console.error('SignalR: Error connecting to hub:', error);
       setIsConnected(false);
       setConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
+    } finally {
+      isConnectingRef.current = false;
     }
   }, [shouldConnect, isConnected, gameState, scheduleParticipantsRefresh]);
 
@@ -170,6 +177,7 @@ export const useSignalR = (
         connectionRef.current = null;
         setIsConnected(false);
         setConnectionError(null);
+        isConnectingRef.current = false;
       }
     }
   }, [gameState.roomCode, gameState.roomId, gameState.currentUser]);
@@ -179,9 +187,11 @@ export const useSignalR = (
     if (shouldConnect) {
       console.log('SignalR: Room data available, attempting to connect');
       // Adiciona delay antes de conectar para evitar conflito com join inicial
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         connectToHub();
       }, 2000);
+
+      return () => clearTimeout(timeoutId);
     }
 
     return () => {

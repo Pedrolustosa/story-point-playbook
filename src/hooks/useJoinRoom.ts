@@ -4,6 +4,7 @@ import { ApiService } from '../services/api';
 import { UserDto } from '../services/api/types';
 import { User, GameState } from '../types/game';
 import { useErrorHandler } from './useErrorHandler';
+import { useNavigate } from 'react-router-dom';
 
 export const useJoinRoom = (
   gameState: GameState,
@@ -11,6 +12,7 @@ export const useJoinRoom = (
   fetchParticipants: (roomId: string) => Promise<any[]>
 ) => {
   const { handleError, handleApiResponse } = useErrorHandler();
+  const navigate = useNavigate();
 
   const joinRoom = useCallback(async (roomCode: string, userName: string) => {
     console.log('=== INÍCIO DO PROCESSO DE ENTRAR NA SALA ===');
@@ -58,10 +60,10 @@ export const useJoinRoom = (
         return;
       }
 
-      // Criar o usuário atual imediatamente
+      // Criar o usuário atual com o nome correto da resposta da API
       const currentUser: User = {
         id: userData.id,
-        name: userData.displayName,
+        name: userData.name || userName, // Use userData.name (not displayName) or fallback to input
         isModerator: false,
         isProductOwner: userData.role === 'ProductOwner',
         hasVoted: false,
@@ -89,7 +91,10 @@ export const useJoinRoom = (
         return updatedState;
       });
 
-      console.log('Estado atualizado com sucesso - usuário deve ser redirecionado');
+      console.log('Estado atualizado com sucesso - redirecionando para game room');
+      
+      // Navigate to the main page which will show GameRoom
+      navigate('/');
 
       // Buscar outros participantes com delay menor para não conflitar com SignalR
       setTimeout(async () => {
@@ -106,7 +111,7 @@ export const useJoinRoom = (
       console.error('Erro ao entrar na sala:', error);
       handleError(error);
     }
-  }, [setGameState, fetchParticipants, handleError, handleApiResponse]);
+  }, [setGameState, fetchParticipants, handleError, handleApiResponse, navigate]);
 
   return { joinRoom };
 };

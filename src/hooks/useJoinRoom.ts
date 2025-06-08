@@ -60,10 +60,10 @@ export const useJoinRoom = (
         return;
       }
 
-      // Criar o usuário atual com o nome correto da resposta da API
+      // Criar o usuário atual com o displayName da resposta da API
       const currentUser: User = {
         id: userData.id,
-        name: userData.name || userName, // Use userData.name (not displayName) or fallback to input
+        name: userData.displayName || userName, // Use userData.displayName or fallback to input
         isModerator: false,
         isProductOwner: userData.role === 'ProductOwner',
         hasVoted: false,

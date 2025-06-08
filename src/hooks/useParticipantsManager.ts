@@ -65,19 +65,42 @@ export const useParticipantsManager = (
       console.log('Dados brutos dos participantes:', participantsData);
 
       const participants: User[] = participantsData.map(participant => {
-        const isProductOwner = participant.role === 'ProductOwner';
-        const displayName = participant.displayName || 'Usuário Anônimo';
+        const isProductOwner = participant.role === 'ProductOwner' || participant.role === 'Moderator';
         
-        console.log('Processando participante:', {
+        // Log detalhado do processamento
+        console.log('🔍 Processando participante da API:', {
           id: participant.id,
           displayName: participant.displayName,
-          finalName: displayName,
-          role: participant.role
+          role: participant.role,
+          roomId: participant.roomId
+        });
+        
+        // Melhoria: Usar fallback mais inteligente para displayName
+        let finalName = 'Usuário Anônimo';
+        
+        if (participant.displayName && participant.displayName.trim()) {
+          finalName = participant.displayName.trim();
+          console.log(`✅ DisplayName encontrado: "${finalName}"`);
+        } else {
+          // Se não tem displayName, verifica se é o usuário atual para usar o nome dele
+          if (gameState.currentUser && gameState.currentUser.id === participant.id) {
+            finalName = gameState.currentUser.name;
+            console.log(`🔄 Usando nome do currentUser: "${finalName}"`);
+          } else {
+            console.warn(`⚠️ DisplayName ausente para usuário ${participant.id}, usando fallback`);
+          }
+        }
+        
+        console.log('Final user data:', {
+          id: participant.id,
+          name: finalName,
+          isProductOwner,
+          isModerator: isProductOwner
         });
         
         return {
           id: participant.id,
-          name: displayName,
+          name: finalName,
           isModerator: isProductOwner,
           isProductOwner: isProductOwner,
           hasVoted: false,
@@ -93,6 +116,17 @@ export const useParticipantsManager = (
 
       console.log('Participantes convertidos:', participants.length);
       console.log('Participantes finais:', participants);
+
+      // Verifica se perdemos o currentUser e o adiciona se necessário
+      if (gameState.currentUser) {
+        const currentUserExists = participants.some(p => p.id === gameState.currentUser!.id);
+        if (!currentUserExists) {
+          console.warn('🚨 CurrentUser não encontrado na lista da API, adicionando manualmente');
+          participants.push(gameState.currentUser);
+        } else {
+          console.log('✅ CurrentUser encontrado na lista da API');
+        }
+      }
 
       setGameState(prev => ({
         ...prev,
@@ -113,7 +147,7 @@ export const useParticipantsManager = (
     } finally {
       setIsLoading(false);
     }
-  }, [gameState.users, handleApiResponse, setGameState]);
+  }, [gameState.users, gameState.currentUser, handleApiResponse, setGameState]);
 
   const fetchParticipantsDebounced = useCallback((roomId: string) => {
     // Cancela timeout anterior se existir

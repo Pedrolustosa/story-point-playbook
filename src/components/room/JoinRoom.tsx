@@ -7,14 +7,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { useNavigate } from 'react-router-dom';
 
 export const JoinRoom: React.FC = () => {
-  const { joinRoom } = useGame();
+  const { joinRoom, gameState } = useGame();
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
   const navigate = useNavigate();
 
-  const handleJoinRoom = () => {
+  console.log('JoinRoom component - gameState atual:', gameState);
+
+  const handleJoinRoom = async () => {
     if (playerName.trim() && roomCode.trim()) {
-      joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
+      console.log('=== INICIANDO PROCESSO DE ENTRAR NA SALA ===');
+      console.log('Dados do formulário:', { roomCode: roomCode.trim(), playerName: playerName.trim() });
+      
+      setIsJoining(true);
+      try {
+        await joinRoom(roomCode.trim().toUpperCase(), playerName.trim());
+        console.log('joinRoom concluído com sucesso');
+      } catch (error) {
+        console.error('Erro no handleJoinRoom:', error);
+      } finally {
+        setIsJoining(false);
+      }
+    } else {
+      console.log('Dados insuficientes para entrar na sala:', { playerName, roomCode });
     }
   };
 
@@ -56,6 +72,7 @@ export const JoinRoom: React.FC = () => {
                   placeholder="Ex: ABC123"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 uppercase text-center text-lg font-mono"
                   maxLength={6}
+                  disabled={isJoining}
                 />
               </div>
               
@@ -70,25 +87,35 @@ export const JoinRoom: React.FC = () => {
                   placeholder="Digite seu nome"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                   maxLength={30}
+                  disabled={isJoining}
                 />
               </div>
+
+              {/* Debug info */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
+                  <div>GameState: roomCode={gameState.roomCode}, currentUser={gameState.currentUser?.name}</div>
+                  <div>Form: roomCode={roomCode}, playerName={playerName}</div>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={handleBack}
                   variant="outline"
                   className="flex-1"
+                  disabled={isJoining}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar
                 </Button>
                 <Button
                   onClick={handleJoinRoom}
-                  disabled={!playerName.trim() || !roomCode.trim()}
+                  disabled={!playerName.trim() || !roomCode.trim() || isJoining}
                   className="flex-1 bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700"
                 >
                   <ArrowRight className="w-4 h-4 mr-2" />
-                  Entrar
+                  {isJoining ? 'Entrando...' : 'Entrar'}
                 </Button>
               </div>
             </CardContent>

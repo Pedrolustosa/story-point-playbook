@@ -13,6 +13,10 @@ export const useJoinRoom = (
   const { handleError, handleApiResponse } = useErrorHandler();
 
   const joinRoom = useCallback(async (roomCode: string, userName: string) => {
+    console.log('=== INÍCIO DO PROCESSO DE ENTRAR NA SALA ===');
+    console.log('Código da sala:', roomCode);
+    console.log('Nome do usuário:', userName);
+
     if (!roomCode.trim()) {
       handleError('Código da sala é obrigatório');
       return;
@@ -23,21 +27,23 @@ export const useJoinRoom = (
       return;
     }
 
-    console.log('Entrando na sala:', roomCode, 'com usuário:', userName);
-
     try {
+      console.log('Fazendo chamada para API - joinRoom');
       const response = await ApiService.rooms.joinRoom(roomCode, {
         displayName: userName,
         role: 'Developer',
       });
 
+      console.log('Resposta da API recebida:', response);
+
       const isSuccess = handleApiResponse(response);
       if (!isSuccess) {
+        console.log('handleApiResponse retornou false - parando execução');
         return;
       }
 
       const userData: UserDto = 'data' in response ? response.data : response;
-      console.log('Usuário entrou na sala com sucesso:', userData);
+      console.log('Dados do usuário extraídos:', userData);
       
       if (!userData || !userData.id) {
         handleError('Resposta inválida da API: dados do usuário ausentes');
@@ -45,6 +51,7 @@ export const useJoinRoom = (
       }
 
       const roomId = userData.roomId;
+      console.log('Room ID extraído:', roomId);
 
       if (!roomId) {
         handleError('ID da sala não encontrado na resposta da API');
@@ -60,15 +67,29 @@ export const useJoinRoom = (
         hasVoted: false,
       };
 
+      console.log('Usuário atual criado:', currentUser);
+
       // Atualiza o estado imediatamente para permitir redirecionamento
-      console.log('Atualizando estado para permitir redirecionamento imediato');
-      setGameState(prev => ({
-        ...prev,
-        roomCode,
+      console.log('=== ATUALIZANDO ESTADO PARA REDIRECIONAMENTO ===');
+      const newState = {
+        roomCode: roomCode.trim().toUpperCase(),
         roomId: roomId,
         currentUser: currentUser,
         users: [currentUser], // Adiciona pelo menos o usuário atual
-      }));
+      };
+      console.log('Novo estado que será definido:', newState);
+
+      setGameState(prev => {
+        const updatedState = {
+          ...prev,
+          ...newState
+        };
+        console.log('Estado anterior:', prev);
+        console.log('Estado atualizado:', updatedState);
+        return updatedState;
+      });
+
+      console.log('Estado atualizado com sucesso - usuário deve ser redirecionado');
 
       // Buscar outros participantes com delay menor para não conflitar com SignalR
       setTimeout(async () => {
@@ -79,7 +100,7 @@ export const useJoinRoom = (
           console.error('Erro ao buscar participantes após entrar:', error);
           // Mantém pelo menos o usuário atual se a busca falhar
         }
-      }, 1500); // Reduzido para 1.5 segundos
+      }, 1500);
       
     } catch (error) {
       console.error('Erro ao entrar na sala:', error);

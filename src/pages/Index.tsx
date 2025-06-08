@@ -10,16 +10,28 @@ const Index: React.FC = () => {
   const navigate = useNavigate();
   
   console.log('Index rendering with gameState:', gameState);
+  console.log('Has roomCode:', !!gameState.roomCode);
+  console.log('Has currentUser:', !!gameState.currentUser);
+  console.log('Should show GameRoom:', !!(gameState.roomCode && gameState.currentUser));
 
   // Redireciona para a sala quando temos roomCode
   useEffect(() => {
     if (gameState.roomCode && gameState.currentUser) {
       console.log('Redirecionando para game room:', gameState.roomCode);
-      // Em vez de renderizar condicionalmente, vamos mostrar a GameRoom diretamente
+      console.log('Current user:', gameState.currentUser);
+    } else {
+      console.log('Não redirecionando - dados insuficientes:', {
+        roomCode: gameState.roomCode,
+        currentUser: gameState.currentUser
+      });
     }
   }, [gameState.roomCode, gameState.currentUser, navigate]);
   
-  return gameState.roomCode && gameState.currentUser ? <GameRoom /> : <HomePage />;
+  // Renderiza GameRoom se temos roomCode e currentUser
+  const shouldShowGameRoom = gameState.roomCode && gameState.currentUser;
+  console.log('Rendering decision - shouldShowGameRoom:', shouldShowGameRoom);
+  
+  return shouldShowGameRoom ? <GameRoom /> : <HomePage />;
 };
 
 export default Index;

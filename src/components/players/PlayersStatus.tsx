@@ -4,6 +4,7 @@ import { Crown, CheckCircle, Clock, User, Wifi, WifiOff, AlertCircle } from 'luc
 import { Card, CardHeader, CardContent, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
+import { ScrollArea } from '../ui/scroll-area';
 import { useGame } from '../../contexts/GameContext';
 
 export const PlayersStatus: React.FC = () => {
@@ -30,8 +31,8 @@ export const PlayersStatus: React.FC = () => {
   );
 
   return (
-    <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50">
-      <CardHeader className="pb-4">
+    <Card className="w-full shadow-lg border-0 bg-gradient-to-br from-white to-gray-50/50 h-[600px] flex flex-col">
+      <CardHeader className="pb-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle className="text-xl font-bold text-gray-900">
@@ -91,124 +92,121 @@ export const PlayersStatus: React.FC = () => {
         )}
       </CardHeader>
 
-      <CardContent className="pt-0">
-        <div className="space-y-3">
-          {uniqueUsers.map((user) => {
-            console.log(`Renderizando usuário: ID=${user.id}, Name="${user.name}", isPO=${user.isProductOwner}, isMod=${user.isModerator}`);
-            
-            return (
-              <div
-                key={`user-${user.id}`}
-                className="group relative overflow-hidden bg-white rounded-2xl border border-gray-100 hover:border-blue-200 hover:shadow-lg transition-all duration-300 ease-out"
-              >
-                {/* Background gradient for PO */}
-                {user.isProductOwner && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-50 via-orange-50 to-amber-50 opacity-50" />
-                )}
+      <CardContent className="pt-0 flex-1 min-h-0">
+        {uniqueUsers.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-sm">
+              <User className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              {gameState.roomCode ? 'Carregando participantes...' : 'Nenhum participante ainda'}
+            </h3>
+            <p className="text-gray-500 text-sm max-w-xs mx-auto">
+              {gameState.roomCode 
+                ? 'Por favor, aguarde enquanto buscamos os participantes da sala.' 
+                : 'Compartilhe o código da sala para convidar pessoas para participar da estimativa.'
+              }
+            </p>
+          </div>
+        ) : (
+          <ScrollArea className="h-full">
+            <div className="space-y-3 pr-4">
+              {uniqueUsers.map((user) => {
+                console.log(`Renderizando usuário: ID=${user.id}, Name="${user.name}", isPO=${user.isProductOwner}, isMod=${user.isModerator}`);
                 
-                <div className="relative p-5">
-                  <div className="flex items-center justify-between">
-                    {/* User Info Section */}
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="relative">
-                        <Avatar className="w-12 h-12 ring-2 ring-white shadow-lg group-hover:scale-110 transition-transform duration-300">
-                          <AvatarFallback className={`font-bold text-sm ${
-                            user.isProductOwner 
-                              ? 'bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 text-white' 
-                              : 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 text-white'
-                          }`}>
-                            {(user.name || 'U').charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        {/* Crown overlay for PO */}
-                        {user.isProductOwner && (
-                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                            <Crown className="w-3.5 h-3.5 text-white" />
+                return (
+                  <div
+                    key={`user-${user.id}`}
+                    className="group relative overflow-hidden bg-white rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-200 ease-out"
+                  >
+                    {/* Background gradient for PO */}
+                    {user.isProductOwner && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-50 via-orange-50 to-amber-50 opacity-50" />
+                    )}
+                    
+                    <div className="relative p-4">
+                      <div className="flex items-center justify-between">
+                        {/* User Info Section */}
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="w-10 h-10 ring-2 ring-white shadow-md">
+                              <AvatarFallback className={`font-bold text-sm ${
+                                user.isProductOwner 
+                                  ? 'bg-gradient-to-br from-yellow-400 via-orange-400 to-red-400 text-white' 
+                                  : 'bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 text-white'
+                              }`}>
+                                {(user.name || 'U').charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            {/* Crown overlay for PO */}
+                            {user.isProductOwner && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-md">
+                                <Crown className="w-3 h-3 text-white" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 truncate text-base">
-                            {user.name || 'Nome não disponível'}
-                          </h3>
-                          {user.id === gameState.currentUser?.id && (
-                            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5">
-                              Você
-                            </Badge>
-                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-semibold text-gray-900 truncate text-sm">
+                                {user.name || 'Nome não disponível'}
+                              </h3>
+                              {user.id === gameState.currentUser?.id && (
+                                <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs font-medium px-1.5 py-0.5 flex-shrink-0">
+                                  Você
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            {/* Role badges */}
+                            <div className="flex items-center gap-1.5">
+                              {user.isProductOwner && (
+                                <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800 rounded-full border border-orange-200">
+                                  <Crown className="w-3 h-3 text-orange-600" />
+                                  <span className="text-xs font-semibold">PO</span>
+                                </div>
+                              )}
+                              
+                              {user.isModerator && !user.isProductOwner && (
+                                <div className="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full border border-blue-200">
+                                  <span className="text-xs font-semibold">Mod</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         
-                        {/* Role badges */}
-                        <div className="flex items-center gap-2">
-                          {user.isProductOwner && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800 rounded-full border border-orange-200">
-                              <Crown className="w-3.5 h-3.5 text-orange-600" />
-                              <span className="text-xs font-semibold">Product Owner</span>
-                            </div>
+                        {/* Status Section */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {gameState.votingInProgress && !user.isProductOwner && (
+                            user.hasVoted ? (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-lg border border-green-200">
+                                <CheckCircle className="w-3.5 h-3.5" />
+                                <span className="text-xs font-semibold">Votou</span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 rounded-lg border border-orange-200">
+                                <Clock className="w-3.5 h-3.5 animate-pulse" />
+                                <span className="text-xs font-semibold">Votando</span>
+                              </div>
+                            )
                           )}
                           
-                          {user.isModerator && !user.isProductOwner && (
-                            <div className="inline-flex items-center px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full border border-blue-200">
-                              <span className="text-xs font-semibold">Moderador</span>
+                          {gameState.votesRevealed && user.vote && (
+                            <div className="bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 text-white px-3 py-2 rounded-xl font-bold text-base shadow-md">
+                              {user.vote}
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Status Section */}
-                    <div className="flex items-center gap-3">
-                      {gameState.votingInProgress && !user.isProductOwner && (
-                        <div className="flex flex-col items-end gap-1">
-                          {user.hasVoted ? (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 rounded-xl border border-green-200 shadow-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              <span className="text-sm font-semibold">Votou</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 rounded-xl border border-orange-200 shadow-sm">
-                              <Clock className="w-4 h-4 animate-pulse" />
-                              <span className="text-sm font-semibold">Votando...</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      
-                      {gameState.votesRevealed && user.vote && (
-                        <div className="relative">
-                          <div className="bg-gradient-to-br from-blue-500 via-purple-600 to-indigo-700 text-white px-4 py-3 rounded-2xl font-bold text-lg shadow-lg transform hover:scale-105 transition-transform duration-200">
-                            {user.vote}
-                          </div>
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl opacity-20 animate-pulse" />
-                        </div>
-                      )}
-                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-          
-          {uniqueUsers.length === 0 && (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-sm">
-                <User className="w-10 h-10 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                {gameState.roomCode ? 'Carregando participantes...' : 'Nenhum participante ainda'}
-              </h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                {gameState.roomCode 
-                  ? 'Por favor, aguarde enquanto buscamos os participantes da sala.' 
-                  : 'Compartilhe o código da sala para convidar pessoas para participar da estimativa.'
-                }
-              </p>
+                );
+              })}
             </div>
-          )}
-        </div>
+          </ScrollArea>
+        )}
       </CardContent>
     </Card>
   );

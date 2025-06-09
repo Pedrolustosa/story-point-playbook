@@ -51,11 +51,12 @@ export interface StoryDto {
   roomId: string;
 }
 
+// DTO atualizado para corresponder ao backend
 export interface UserDto {
   id: string;
-  displayName: string;
+  name: string;  // Mudou de displayName para name
   role: string;
-  roomId: string;
+  roomId?: string; // Opcional, nem sempre presente
 }
 
 export interface VoteEntryDto {

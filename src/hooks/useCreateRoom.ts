@@ -63,10 +63,10 @@ export const useCreateRoom = (
       const userData: UserDto = 'data' in joinResponse ? joinResponse.data : joinResponse;
       console.log('Usuário criado/atualizado após join:', userData);
 
-      // Create the current user with the correct name
+      // Create the current user with the name from the API response
       const currentUser: User = {
         id: userData.id,
-        name: userData.displayName || moderatorName, // Usar displayName da resposta ou fallback
+        name: userData.name || moderatorName, // Usar name da resposta ou fallback
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,

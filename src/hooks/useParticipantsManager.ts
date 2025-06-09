@@ -69,19 +69,18 @@ export const useParticipantsManager = (
         
         console.log('🔍 Processando participante da API:', {
           id: participant.id,
-          displayName: participant.displayName,
-          role: participant.role,
-          roomId: participant.roomId
+          name: participant.name,
+          role: participant.role
         });
         
-        // Estratégia melhorada para obter o nome do usuário
+        // Estratégia melhorada para obter o nome do usuário usando 'name' do backend
         let finalName = '';
         
-        if (participant.displayName && participant.displayName.trim()) {
-          finalName = participant.displayName.trim();
-          console.log(`✅ DisplayName encontrado: "${finalName}"`);
+        if (participant.name && participant.name.trim()) {
+          finalName = participant.name.trim();
+          console.log(`✅ Name encontrado: "${finalName}"`);
         } else if (gameState.currentUser && gameState.currentUser.id === participant.id) {
-          // Se é o usuário atual e não tem displayName, usa o nome do currentUser
+          // Se é o usuário atual e não tem name, usa o nome do currentUser
           finalName = gameState.currentUser.name;
           console.log(`🔄 Usando nome do currentUser: "${finalName}"`);
         } else {
@@ -93,7 +92,7 @@ export const useParticipantsManager = (
           } else {
             // Último recurso: gerar nome baseado no role para debug
             finalName = participant.role === 'Moderator' ? 'Product Owner' : 'Desenvolvedor';
-            console.warn(`⚠️ DisplayName ausente para usuário ${participant.id}, usando nome baseado em role: "${finalName}"`);
+            console.warn(`⚠️ Name ausente para usuário ${participant.id}, usando nome baseado em role: "${finalName}"`);
           }
         }
         

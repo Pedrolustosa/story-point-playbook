@@ -31,21 +31,12 @@ export const useStoryOperations = (
           return;
         }
 
-        const newStory: Story = {
-          id: storyData.id,
-          title: storyData.title,
-          description: storyData.description,
-          isCompleted: false,
-        };
-
-        setGameState(prev => ({
-          ...prev,
-          stories: [...prev.stories, newStory],
-        }));
+        // Não adiciona mais localmente - deixa o SignalR gerenciar
+        console.log('História criada com sucesso via API:', storyData.id);
       }
     } catch (error) {
       handleError(error);
-      // Fallback para modo local
+      // Fallback para modo local apenas se não há conexão SignalR
       const newStory: Story = {
         ...story,
         id: Date.now().toString(),

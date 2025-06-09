@@ -63,6 +63,26 @@ export const useSignalRStoryEvents = (
         currentStory: prev.currentStory?.id === storyId ? null : prev.currentStory,
       }));
     });
+
+    connection.on('CurrentStorySet', (storyDto: any) => {
+      console.log('SignalR: Current story set:', storyDto);
+      const currentStory: Story = {
+        id: storyDto.id,
+        title: storyDto.title,
+        description: storyDto.description,
+        isCompleted: storyDto.isCompleted || false,
+        estimate: storyDto.estimate,
+      };
+      
+      setGameState(prev => ({
+        ...prev,
+        currentStory: currentStory,
+        votingInProgress: true,
+        votesRevealed: false,
+        revealCountdown: null,
+        users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+      }));
+    });
   }, [setGameState]);
 
   return {

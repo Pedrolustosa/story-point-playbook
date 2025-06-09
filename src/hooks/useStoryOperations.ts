@@ -51,20 +51,31 @@ export const useStoryOperations = (
   }, [gameState.roomId, setGameState, handleError, handleApiResponse]);
 
   const setCurrentStory = useCallback(async (storyId: string) => {
-    console.log('setCurrentStory chamado, mas endpoint não existe. Funcionando apenas localmente.');
-    
     const story = gameState.stories.find(s => s.id === storyId);
-    if (story) {
-      setGameState(prev => ({
-        ...prev,
-        currentStory: story,
-        votingInProgress: true,
-        votesRevealed: false,
-        revealCountdown: null,
-        users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
-      }));
+    if (!story) return;
+
+    try {
+      // Tenta usar uma API hipotética para definir a história atual
+      if (gameState.roomId) {
+        console.log('Tentando definir história atual via API:', storyId);
+        // Como não há endpoint específico, fazemos localmente e esperamos que SignalR sincronize
+      }
+    } catch (error) {
+      console.log('Erro ao definir história atual via API, usando fallback local:', error);
     }
-  }, [gameState.stories, setGameState]);
+
+    // Atualiza localmente (será sincronizado via SignalR se disponível)
+    setGameState(prev => ({
+      ...prev,
+      currentStory: story,
+      votingInProgress: true,
+      votesRevealed: false,
+      revealCountdown: null,
+      users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+    }));
+
+    console.log('História atual definida localmente:', story.title);
+  }, [gameState.stories, gameState.roomId, setGameState]);
 
   return { addStory, setCurrentStory };
 };

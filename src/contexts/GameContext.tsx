@@ -8,6 +8,7 @@ import { useStoryOperations } from '../hooks/useStoryOperations';
 import { useVotingOperations } from '../hooks/useVotingOperations';
 import { useParticipantNotifications } from '../hooks/useParticipantNotifications';
 import { useStoryNotifications } from '../hooks/useStoryNotifications';
+import { useCurrentStoryNotifications } from '../hooks/useCurrentStoryNotifications';
 import { useSignalR } from '../hooks/useSignalR';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -26,6 +27,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Always call notification hooks - they will handle their own conditions
   useParticipantNotifications(gameState.users, gameState.currentUser);
   useStoryNotifications(gameState.stories);
+  useCurrentStoryNotifications(gameState.currentStory, gameState.currentUser);
 
   // Create the final context value
   const contextValue: GameContextType = {

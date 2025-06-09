@@ -13,7 +13,8 @@ export const useSignalRStoryEvents = (
         id: dto.id,
         title: dto.title,
         description: dto.description,
-        isCompleted: false,
+        isCompleted: dto.status === 'completed' || false,
+        estimate: dto.average || dto.estimate,
       }));
       
       setGameState(prev => ({
@@ -28,7 +29,8 @@ export const useSignalRStoryEvents = (
         id: storyDto.id,
         title: storyDto.title,
         description: storyDto.description,
-        isCompleted: false,
+        isCompleted: storyDto.status === 'completed' || false,
+        estimate: storyDto.average || storyDto.estimate,
       };
       
       setGameState(prev => ({
@@ -43,8 +45,8 @@ export const useSignalRStoryEvents = (
         id: storyDto.id,
         title: storyDto.title,
         description: storyDto.description,
-        isCompleted: storyDto.isCompleted || false,
-        estimate: storyDto.estimate,
+        isCompleted: storyDto.status === 'completed' || storyDto.isCompleted || false,
+        estimate: storyDto.average || storyDto.estimate,
       };
       
       setGameState(prev => ({
@@ -84,11 +86,16 @@ export const useSignalRStoryEvents = (
         id: storyDto.id,
         title: storyDto.title,
         description: storyDto.description,
-        isCompleted: storyDto.isCompleted || false,
-        estimate: storyDto.estimate,
+        isCompleted: storyDto.status === 'completed' || storyDto.isCompleted || false,
+        estimate: storyDto.average || storyDto.estimate,
       };
       
-      console.log('SignalR: Setting current story and starting voting:', currentStory.title);
+      console.log('SignalR: Setting current story and starting voting:', {
+        title: currentStory.title,
+        description: currentStory.description,
+        estimate: currentStory.estimate
+      });
+      
       setGameState(prev => ({
         ...prev,
         currentStory: currentStory,

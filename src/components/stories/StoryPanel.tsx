@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Award } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const StoryPanel: React.FC = () => {
@@ -41,7 +42,7 @@ export const StoryPanel: React.FC = () => {
           )}
           
           <div className="flex items-center gap-4 text-sm">
-            {gameState.votingInProgress && (
+            {gameState.votingInProgress && !gameState.votesRevealed && (
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-medium">
                 Votação em andamento
               </span>
@@ -50,6 +51,19 @@ export const StoryPanel: React.FC = () => {
             {gameState.votesRevealed && (
               <span className="inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 font-medium">
                 Votos revelados
+              </span>
+            )}
+
+            {gameState.currentStory.estimate && (
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-purple-100 text-purple-800 font-medium">
+                <Award className="w-3 h-3" />
+                Estimativa: {gameState.currentStory.estimate}
+              </span>
+            )}
+
+            {gameState.currentStory.isCompleted && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium">
+                Concluída
               </span>
             )}
           </div>

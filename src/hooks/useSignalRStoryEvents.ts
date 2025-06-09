@@ -65,7 +65,21 @@ export const useSignalRStoryEvents = (
     });
 
     connection.on('CurrentStorySet', (storyDto: any) => {
-      console.log('SignalR: Current story set:', storyDto);
+      console.log('SignalR: Current story set received:', storyDto);
+      
+      if (!storyDto) {
+        console.log('SignalR: Story data is null, clearing current story');
+        setGameState(prev => ({
+          ...prev,
+          currentStory: null,
+          votingInProgress: false,
+          votesRevealed: false,
+          revealCountdown: null,
+          users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+        }));
+        return;
+      }
+
       const currentStory: Story = {
         id: storyDto.id,
         title: storyDto.title,
@@ -74,6 +88,7 @@ export const useSignalRStoryEvents = (
         estimate: storyDto.estimate,
       };
       
+      console.log('SignalR: Setting current story and starting voting:', currentStory.title);
       setGameState(prev => ({
         ...prev,
         currentStory: currentStory,

@@ -13,6 +13,7 @@ export const useStoryOperations = (
   const addStory = useCallback(async (story: Omit<Story, 'id' | 'isCompleted'>) => {
     try {
       if (gameState.roomId) {
+        console.log('Criando história via API:', story.title);
         const response = await ApiService.stories.createStory(gameState.roomId, {
           title: story.title,
           description: story.description,
@@ -21,6 +22,7 @@ export const useStoryOperations = (
         // Só procede se a API retornar sucesso
         const isSuccess = handleApiResponse(response);
         if (!isSuccess) {
+          console.log('API retornou erro para criação da história');
           return;
         }
 
@@ -35,6 +37,7 @@ export const useStoryOperations = (
         console.log('História criada com sucesso via API:', storyData.id);
       }
     } catch (error) {
+      console.log('Erro ao criar história via API, usando fallback local:', error);
       handleError(error);
       // Fallback para modo local apenas se não há conexão SignalR
       const newStory: Story = {
@@ -52,16 +55,22 @@ export const useStoryOperations = (
 
   const setCurrentStory = useCallback(async (storyId: string) => {
     const story = gameState.stories.find(s => s.id === storyId);
-    if (!story) return;
+    if (!story) {
+      console.log('Erro: História não encontrada com ID:', storyId);
+      return;
+    }
 
     try {
       if (gameState.roomId) {
-        console.log('Definindo história atual via API:', storyId);
+        console.log('Definindo história atual via API:', { storyId, roomId: gameState.roomId });
         const response = await ApiService.stories.selectStoryForVoting(gameState.roomId, storyId);
+        
+        console.log('Resposta da API para selectStoryForVoting:', response);
         
         // Só procede se a API retornar sucesso
         const isSuccess = handleApiResponse(response);
         if (!isSuccess) {
+          console.log('API retornou erro para seleção da história');
           return;
         }
 
@@ -75,6 +84,7 @@ export const useStoryOperations = (
     }
 
     // Fallback local apenas se a API falhar
+    console.log('Usando fallback local para definir história atual:', story.title);
     setGameState(prev => ({
       ...prev,
       currentStory: story,

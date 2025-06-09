@@ -61,6 +61,3 @@ export const useGame = () => {
   }
   return context;
 };
-
-// Re-export types for backwards compatibility
-export type { User, Story, GameState } from '../types/game';

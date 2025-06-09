@@ -75,7 +75,46 @@ export const useStoryOperations = (
         }
 
         console.log('História atual definida com sucesso via API');
-        // O SignalR vai gerenciar a atualização do estado via CurrentStorySet
+        
+        // Adicionar fallback: aguardar 3 segundos pelo evento SignalR
+        // Se não receber, atualizar localmente
+        let signalRReceived = false;
+        
+        const originalCurrentStory = gameState.currentStory;
+        
+        // Aguardar um pouco para ver se o SignalR atualiza
+        setTimeout(() => {
+          setGameState(prev => {
+            // Se a história ainda não foi atualizada pelo SignalR, fazer fallback local
+            if (prev.currentStory?.id !== storyId && !signalRReceived) {
+              console.log('⚠️ Fallback: SignalR não atualizou a história, aplicando mudança local');
+              return {
+                ...prev,
+                currentStory: story,
+                votingInProgress: true,
+                votesRevealed: false,
+                revealCountdown: null,
+                users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
+              };
+            }
+            return prev;
+          });
+        }, 3000);
+
+        // Monitor para detectar se o SignalR funcionou
+        const checkSignalR = () => {
+          setGameState(prev => {
+            if (prev.currentStory?.id === storyId) {
+              signalRReceived = true;
+              console.log('✅ SignalR funcionou: história atualizada corretamente');
+            }
+            return prev;
+          });
+        };
+        
+        setTimeout(checkSignalR, 1000);
+        setTimeout(checkSignalR, 2000);
+        
         return;
       }
     } catch (error) {
@@ -95,7 +134,7 @@ export const useStoryOperations = (
     }));
 
     console.log('História atual definida localmente (fallback):', story.title);
-  }, [gameState.stories, gameState.roomId, setGameState, handleError, handleApiResponse]);
+  }, [gameState.stories, gameState.roomId, gameState.currentStory, setGameState, handleError, handleApiResponse]);
 
   return { addStory, setCurrentStory };
 };

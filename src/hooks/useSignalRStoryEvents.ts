@@ -7,6 +7,21 @@ export const useSignalRStoryEvents = (
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
   const setupStoryEvents = useCallback((connection: HubConnection) => {
+    // Log all events received for debugging
+    connection.onreconnected(() => {
+      console.log('🔄 SignalR: Reconnected - re-registering story events');
+    });
+
+    // Add a generic event listener to catch any events we might be missing
+    const originalOn = connection.on.bind(connection);
+    connection.on = function(eventName: string, handler: (...args: any[]) => void) {
+      console.log(`🎯 SignalR: Registering handler for event: ${eventName}`);
+      return originalOn(eventName, (...args: any[]) => {
+        console.log(`🎯 SignalR: Event received: ${eventName}`, args);
+        return handler(...args);
+      });
+    };
+
     connection.on('StoriesInitialized', (storyDtos: any[]) => {
       console.log('SignalR: Stories initialized received:', storyDtos);
       const stories: Story[] = storyDtos.map(dto => ({
@@ -66,6 +81,7 @@ export const useSignalRStoryEvents = (
       }));
     });
 
+    // Enhanced CurrentStorySet handler with more debugging
     connection.on('CurrentStorySet', (storyDto: any) => {
       console.log('🎯 SignalR: CurrentStorySet event received!');
       console.log('🎯 SignalR: Raw story data:', storyDto);
@@ -121,13 +137,44 @@ export const useSignalRStoryEvents = (
       });
     });
 
-    // Adicionar log para verificar se há outros eventos que podem estar sendo perdidos
+    // Listen for any potential alternative event names
+    connection.on('StorySelected', (storyDto: any) => {
+      console.log('🎯 SignalR: StorySelected event received (alternative):', storyDto);
+      // Trigger the same handler as CurrentStorySet
+      connection.emit('CurrentStorySet', storyDto);
+    });
+
+    connection.on('VotingStarted', (storyDto: any) => {
+      console.log('🎯 SignalR: VotingStarted event received (alternative):', storyDto);
+      // Trigger the same handler as CurrentStorySet
+      connection.emit('CurrentStorySet', storyDto);
+    });
+
+    // Add a generic catch-all event listener to see what events are actually being sent
+    const eventNames = [
+      'CurrentStorySet', 'StorySelected', 'VotingStarted', 'StorySetForVoting',
+      'StoryActivated', 'ActiveStoryChanged', 'GameStateChanged'
+    ];
+
+    eventNames.forEach(eventName => {
+      if (!connection.listeners(eventName).length) {
+        connection.on(eventName, (...args: any[]) => {
+          console.log(`🎯 SignalR: Unexpected event '${eventName}' received:`, args);
+        });
+      }
+    });
+    
+    // Log all registered events
     console.log('🎯 SignalR: Story events registered. Listening for:');
     console.log('  - StoriesInitialized');
     console.log('  - StoryAdded'); 
     console.log('  - StoryUpdated');
     console.log('  - StoryDeleted');
     console.log('  - CurrentStorySet ⭐');
+    console.log('  - StorySelected (alternative)');
+    console.log('  - VotingStarted (alternative)');
+    console.log('🎯 SignalR: Connection state:', connection.state);
+    console.log('🎯 SignalR: Connection ID:', connection.connectionId);
     
   }, [setGameState]);
 

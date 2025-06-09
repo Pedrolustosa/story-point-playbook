@@ -67,7 +67,6 @@ export const useParticipantsManager = (
       const participants: User[] = participantsData.map(participant => {
         const isProductOwner = participant.role === 'ProductOwner' || participant.role === 'Moderator';
         
-        // Log detalhado do processamento
         console.log('🔍 Processando participante da API:', {
           id: participant.id,
           displayName: participant.displayName,
@@ -75,19 +74,26 @@ export const useParticipantsManager = (
           roomId: participant.roomId
         });
         
-        // Melhoria: Usar fallback mais inteligente para displayName
-        let finalName = 'Usuário Anônimo';
+        // Estratégia melhorada para obter o nome do usuário
+        let finalName = '';
         
         if (participant.displayName && participant.displayName.trim()) {
           finalName = participant.displayName.trim();
           console.log(`✅ DisplayName encontrado: "${finalName}"`);
+        } else if (gameState.currentUser && gameState.currentUser.id === participant.id) {
+          // Se é o usuário atual e não tem displayName, usa o nome do currentUser
+          finalName = gameState.currentUser.name;
+          console.log(`🔄 Usando nome do currentUser: "${finalName}"`);
         } else {
-          // Se não tem displayName, verifica se é o usuário atual para usar o nome dele
-          if (gameState.currentUser && gameState.currentUser.id === participant.id) {
-            finalName = gameState.currentUser.name;
-            console.log(`🔄 Usando nome do currentUser: "${finalName}"`);
+          // Se não conseguiu obter o nome de nenhuma forma, tenta buscar de usuários existentes
+          const existingUser = gameState.users.find(u => u.id === participant.id);
+          if (existingUser && existingUser.name && existingUser.name !== 'Usuário Anônimo') {
+            finalName = existingUser.name;
+            console.log(`🔄 Usando nome de usuário existente: "${finalName}"`);
           } else {
-            console.warn(`⚠️ DisplayName ausente para usuário ${participant.id}, usando fallback`);
+            // Último recurso: gerar nome baseado no role para debug
+            finalName = participant.role === 'Moderator' ? 'Product Owner' : 'Desenvolvedor';
+            console.warn(`⚠️ DisplayName ausente para usuário ${participant.id}, usando nome baseado em role: "${finalName}"`);
           }
         }
         

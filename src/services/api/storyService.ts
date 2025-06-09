@@ -12,6 +12,10 @@ export class StoryService {
     return httpClient.get<StoryDto[]>(`/rooms/${roomId}/stories`);
   }
 
+  static async selectStoryForVoting(roomId: string, storyId: string) {
+    return httpClient.post(`/rooms/${roomId}/stories/${storyId}/select`);
+  }
+
   static async submitVote(command: SubmitVoteCommand) {
     return httpClient.post(`/stories/${command.storyId}/votes`, command);
   }

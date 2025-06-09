@@ -62,7 +62,6 @@ export const useParticipantsManager = (
       }
 
       console.log('Dados dos participantes da API:', participantsData.length, 'participantes');
-      console.log('Dados brutos dos participantes:', participantsData);
 
       const participants: User[] = participantsData.map(participant => {
         const isProductOwner = participant.role === 'ProductOwner' || participant.role === 'Moderator';
@@ -73,35 +72,21 @@ export const useParticipantsManager = (
           role: participant.role
         });
         
-        // Estratégia melhorada para obter o nome do usuário usando 'name' do backend
         let finalName = '';
         
         if (participant.name && participant.name.trim()) {
           finalName = participant.name.trim();
-          console.log(`✅ Name encontrado: "${finalName}"`);
         } else if (gameState.currentUser && gameState.currentUser.id === participant.id) {
-          // Se é o usuário atual e não tem name, usa o nome do currentUser
           finalName = gameState.currentUser.name;
-          console.log(`🔄 Usando nome do currentUser: "${finalName}"`);
         } else {
-          // Se não conseguiu obter o nome de nenhuma forma, tenta buscar de usuários existentes
           const existingUser = gameState.users.find(u => u.id === participant.id);
           if (existingUser && existingUser.name && existingUser.name !== 'Usuário Anônimo') {
             finalName = existingUser.name;
-            console.log(`🔄 Usando nome de usuário existente: "${finalName}"`);
           } else {
-            // Último recurso: gerar nome baseado no role para debug
             finalName = participant.role === 'Moderator' ? 'Product Owner' : 'Desenvolvedor';
             console.warn(`⚠️ Name ausente para usuário ${participant.id}, usando nome baseado em role: "${finalName}"`);
           }
         }
-        
-        console.log('Final user data:', {
-          id: participant.id,
-          name: finalName,
-          isProductOwner,
-          isModerator: isProductOwner
-        });
         
         return {
           id: participant.id,
@@ -112,40 +97,54 @@ export const useParticipantsManager = (
         };
       });
 
-      // Atualiza cache
-      cacheRef.current = {
-        roomId,
-        participants,
-        timestamp: now
-      };
-
-      console.log('Participantes convertidos:', participants.length);
-      console.log('Participantes finais:', participants);
-
-      // Verifica se perdemos o currentUser e o adiciona se necessário
-      if (gameState.currentUser) {
-        const currentUserExists = participants.some(p => p.id === gameState.currentUser!.id);
-        if (!currentUserExists) {
-          console.warn('🚨 CurrentUser não encontrado na lista da API, adicionando manualmente');
-          participants.push(gameState.currentUser);
+      // ✅ CORREÇÃO CRÍTICA: Verificação rigorosa de duplicação
+      console.log('🔧 Aplicando verificação rigorosa de duplicação...');
+      
+      // Deduplica por ID primeiro
+      const uniqueById = participants.filter((user, index, self) => 
+        index === self.findIndex(u => u.id === user.id)
+      );
+      
+      // Para POs, também deduplica por role para evitar múltiplos POs
+      const finalParticipants: User[] = [];
+      let hasProductOwner = false;
+      
+      for (const user of uniqueById) {
+        if (user.isProductOwner) {
+          if (!hasProductOwner) {
+            finalParticipants.push(user);
+            hasProductOwner = true;
+            console.log('✅ Adicionando PO único:', user.name);
+          } else {
+            console.warn('⚠️ PO duplicado removido:', user.name);
+          }
         } else {
-          console.log('✅ CurrentUser encontrado na lista da API');
+          finalParticipants.push(user);
         }
       }
 
+      // Atualiza cache
+      cacheRef.current = {
+        roomId,
+        participants: finalParticipants,
+        timestamp: now
+      };
+
+      console.log('✅ Participantes finais após deduplicação:', finalParticipants.length);
+      console.log('✅ POs na lista final:', finalParticipants.filter(p => p.isProductOwner).length);
+
       setGameState(prev => ({
         ...prev,
-        users: participants,
+        users: finalParticipants,
       }));
 
-      return participants;
+      return finalParticipants;
     } catch (error) {
       console.error('Erro ao buscar participantes:', error);
       
-      // Em caso de erro 429, aumenta o intervalo
       if (error && typeof error === 'object' && 'status' in error && error.status === 429) {
         console.warn('Rate limit atingido - aguardando mais tempo para próxima requisição');
-        lastFetchTimeRef.current = now + 15000; // Bloqueia por 15 segundos adicionais
+        lastFetchTimeRef.current = now + 15000;
       }
       
       return gameState.users;
@@ -155,12 +154,10 @@ export const useParticipantsManager = (
   }, [gameState.users, gameState.currentUser, handleApiResponse, setGameState]);
 
   const fetchParticipantsDebounced = useCallback((roomId: string) => {
-    // Cancela timeout anterior se existir
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    // Cria novo timeout
     debounceTimeoutRef.current = setTimeout(() => {
       fetchParticipantsImmediate(roomId);
     }, DEBOUNCE_DELAY);

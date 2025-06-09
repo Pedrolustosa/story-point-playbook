@@ -29,7 +29,7 @@ export const useCreateRoom = (
       // Create room with the moderator name
       const createRoomResponse = await ApiService.rooms.createRoom({
         name: `Sala de ${moderatorName}`,
-        createdBy: moderatorName, // Este campo é obrigatório para criar a sala
+        createdBy: moderatorName,
         scale: 0, // Fibonacci
         timeLimit: 0,
         autoReveal: false,
@@ -51,7 +51,7 @@ export const useCreateRoom = (
       // Agora entrar na sala recém-criada como moderador
       console.log('Entrando na sala criada como moderador:', roomData.code);
       const joinResponse = await ApiService.rooms.joinRoom(roomData.code, {
-        displayName: moderatorName, // Importante: usar displayName aqui
+        displayName: moderatorName,
         role: 'Moderator',
       });
 
@@ -66,35 +66,41 @@ export const useCreateRoom = (
       // Create the current user with the name from the API response
       const currentUser: User = {
         id: userData.id,
-        name: userData.name || moderatorName, // Usar name da resposta ou fallback
+        name: userData.name || moderatorName,
         isModerator: true,
         isProductOwner: true,
         hasVoted: false,
       };
 
-      console.log('Estado da sala atualizado, buscando participantes...');
+      console.log('⚠️ CORREÇÃO: Atualizando estado sem adicionar usuário duplicado');
 
-      // Update game state immediately
+      // Update game state immediately but WITHOUT adding user manually
+      // Let fetchParticipants handle adding all users from API to avoid duplicates
       setGameState(prev => ({
         ...prev,
         roomCode: roomData.code.toUpperCase(),
         roomId: roomData.id,
         currentUser: currentUser,
-        users: [currentUser], // Adiciona pelo menos o usuário atual
+        users: [], // ✅ CORREÇÃO: Não adicionar usuário manual, deixar API lidar com isso
       }));
 
       // Navigate to main page
       navigate('/');
 
-      // Fetch participants after a delay to ensure the API is ready
+      // Fetch participants immediately after join to get the complete list
       setTimeout(async () => {
         try {
           console.log('Buscando participantes da sala criada:', roomData.id);
           await fetchParticipants(roomData.id);
         } catch (error) {
           console.error('Erro ao buscar participantes após criar sala:', error);
+          // Em caso de erro, pelo menos garantir que o currentUser esteja no estado
+          setGameState(prev => ({
+            ...prev,
+            users: prev.users.length === 0 ? [currentUser] : prev.users
+          }));
         }
-      }, 1500);
+      }, 1000); // Reduzido para 1 segundo
 
     } catch (error) {
       console.error('Erro ao criar sala:', error);

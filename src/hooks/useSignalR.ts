@@ -1,11 +1,11 @@
-
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-import { GameState, User } from '../types/game';
+import { GameState, User, Story } from '../types/game';
 
 export const useSignalR = (
   gameState: GameState,
-  fetchParticipants: (roomId: string) => Promise<any[]>
+  fetchParticipants: (roomId: string) => Promise<any[]>,
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
   const connectionRef = useRef<HubConnection | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -68,25 +68,83 @@ export const useSignalR = (
         .configureLogging(LogLevel.Information)
         .build();
 
-      // Eventos SignalR com debounce maior para evitar conflitos
+      // Eventos SignalR existentes
       connection.on('UserJoined', async (userData: any) => {
         console.log('SignalR: User joined event received:', userData);
-        scheduleParticipantsRefresh(3000); // Debounce de 3 segundos
+        scheduleParticipantsRefresh(3000);
       });
 
       connection.on('UserLeft', async (userId: string) => {
         console.log('SignalR: User left event received:', userId);
-        scheduleParticipantsRefresh(3000); // Debounce de 3 segundos
+        scheduleParticipantsRefresh(3000);
       });
 
       connection.on('ParticipantCountUpdated', async (count: number) => {
         console.log('SignalR: Participant count updated:', count);
-        scheduleParticipantsRefresh(5000); // Debounce maior para count updates
+        scheduleParticipantsRefresh(5000);
       });
 
       connection.on('ParticipantsUpdated', async (participants: any[]) => {
         console.log('SignalR: Participants list updated directly:', participants.length, 'participantes');
-        scheduleParticipantsRefresh(2000); // Debounce menor para updates diretos
+        scheduleParticipantsRefresh(2000);
+      });
+
+      // Novos eventos para histórias
+      connection.on('StoriesInitialized', (storyDtos: any[]) => {
+        console.log('SignalR: Stories initialized received:', storyDtos);
+        const stories: Story[] = storyDtos.map(dto => ({
+          id: dto.id,
+          title: dto.title,
+          description: dto.description,
+          isCompleted: false,
+        }));
+        
+        setGameState(prev => ({
+          ...prev,
+          stories: stories,
+        }));
+      });
+
+      connection.on('StoryAdded', (storyDto: any) => {
+        console.log('SignalR: New story added:', storyDto);
+        const newStory: Story = {
+          id: storyDto.id,
+          title: storyDto.title,
+          description: storyDto.description,
+          isCompleted: false,
+        };
+        
+        setGameState(prev => ({
+          ...prev,
+          stories: [...prev.stories, newStory],
+        }));
+      });
+
+      connection.on('StoryUpdated', (storyDto: any) => {
+        console.log('SignalR: Story updated:', storyDto);
+        const updatedStory: Story = {
+          id: storyDto.id,
+          title: storyDto.title,
+          description: storyDto.description,
+          isCompleted: storyDto.isCompleted || false,
+          estimate: storyDto.estimate,
+        };
+        
+        setGameState(prev => ({
+          ...prev,
+          stories: prev.stories.map(story => 
+            story.id === updatedStory.id ? updatedStory : story
+          ),
+        }));
+      });
+
+      connection.on('StoryDeleted', (storyId: string) => {
+        console.log('SignalR: Story deleted:', storyId);
+        setGameState(prev => ({
+          ...prev,
+          stories: prev.stories.filter(story => story.id !== storyId),
+          currentStory: prev.currentStory?.id === storyId ? null : prev.currentStory,
+        }));
       });
 
       // Handle connection state changes
@@ -141,7 +199,7 @@ export const useSignalR = (
         
         // Só agenda atualização de participantes se não temos dados ainda
         if (gameState.users.length <= 1) {
-          scheduleParticipantsRefresh(6000); // Delay maior para primeira busca via SignalR
+          scheduleParticipantsRefresh(6000);
         }
       }
 
@@ -154,7 +212,7 @@ export const useSignalR = (
     } finally {
       isConnectingRef.current = false;
     }
-  }, [shouldConnect, isConnected, gameState, scheduleParticipantsRefresh]);
+  }, [shouldConnect, isConnected, gameState, scheduleParticipantsRefresh, setGameState]);
 
   const disconnectFromHub = useCallback(async () => {
     // Limpa timeout pendente

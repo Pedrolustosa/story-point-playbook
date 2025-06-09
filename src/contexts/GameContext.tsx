@@ -7,6 +7,7 @@ import { useRoomOperations } from '../hooks/useRoomOperations';
 import { useStoryOperations } from '../hooks/useStoryOperations';
 import { useVotingOperations } from '../hooks/useVotingOperations';
 import { useParticipantNotifications } from '../hooks/useParticipantNotifications';
+import { useStoryNotifications } from '../hooks/useStoryNotifications';
 import { useSignalR } from '../hooks/useSignalR';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -20,10 +21,11 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const votingOperations = useVotingOperations(gameState, setGameState);
 
   // Always call useSignalR - it will handle its own conditional logic internally
-  const signalRData = useSignalR(gameState, roomOperations.fetchParticipants);
+  const signalRData = useSignalR(gameState, roomOperations.fetchParticipants, setGameState);
 
-  // Always call useParticipantNotifications - it will handle its own conditions
+  // Always call notification hooks - they will handle their own conditions
   useParticipantNotifications(gameState.users, gameState.currentUser);
+  useStoryNotifications(gameState.stories);
 
   // Create the final context value
   const contextValue: GameContextType = {
@@ -53,7 +55,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useGame = () => {
   const context = useContext(GameContext);
   if (context === undefined) {
-    throw new Error('useGame must be used within a GameProvider');
+    throw new error('useGame must be used within a GameProvider');
   }
   return context;
 };

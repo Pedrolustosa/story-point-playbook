@@ -12,7 +12,7 @@ export const useSignalRStoryEvents = (
       console.log('🔄 SignalR: Reconnected - re-registering story events');
     });
 
-    // Add a generic event listener to catch any events we might be missing
+    // Add a generic event listener to catch ANY events we might be missing
     const originalOn = connection.on.bind(connection);
     connection.on = function(eventName: string, handler: (...args: any[]) => void) {
       console.log(`🎯 SignalR: Registering handler for event: ${eventName}`);
@@ -83,7 +83,7 @@ export const useSignalRStoryEvents = (
 
     // Create a reusable handler for setting current story
     const handleCurrentStorySet = (storyDto: any) => {
-      console.log('🎯 SignalR: CurrentStorySet event received!');
+      console.log('🎯🎯🎯 SignalR: STORY SELECTION EVENT RECEIVED!');
       console.log('🎯 SignalR: Raw story data:', storyDto);
       console.log('🎯 SignalR: Story data type:', typeof storyDto);
       console.log('🎯 SignalR: Story data keys:', storyDto ? Object.keys(storyDto) : 'null/undefined');
@@ -109,17 +109,13 @@ export const useSignalRStoryEvents = (
         estimate: storyDto.average || storyDto.estimate,
       };
       
-      console.log('🎯 SignalR: Processed story object:', currentStory);
-      console.log('🎯 SignalR: Setting current story and starting voting:', {
-        title: currentStory.title,
-        description: currentStory.description,
-        estimate: currentStory.estimate,
-        id: currentStory.id
-      });
+      console.log('🎯🎯🎯 SignalR: SETTING CURRENT STORY FOR ALL USERS!');
+      console.log('🎯 SignalR: Story title:', currentStory.title);
+      console.log('🎯 SignalR: Starting voting for all participants');
       
       setGameState(prev => {
-        console.log('🎯 SignalR: Previous state - currentStory:', prev.currentStory?.title || 'none');
-        console.log('🎯 SignalR: Previous state - votingInProgress:', prev.votingInProgress);
+        console.log('🎯 SignalR: Previous currentStory:', prev.currentStory?.title || 'none');
+        console.log('🎯 SignalR: Previous votingInProgress:', prev.votingInProgress);
         
         const newState = {
           ...prev,
@@ -130,55 +126,45 @@ export const useSignalRStoryEvents = (
           users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
         };
         
-        console.log('🎯 SignalR: New state - currentStory:', newState.currentStory?.title);
-        console.log('🎯 SignalR: New state - votingInProgress:', newState.votingInProgress);
+        console.log('🎯🎯🎯 SignalR: NEW STATE SET - VOTING SHOULD START NOW!');
+        console.log('🎯 SignalR: New currentStory:', newState.currentStory?.title);
+        console.log('🎯 SignalR: New votingInProgress:', newState.votingInProgress);
         
         return newState;
       });
     };
 
-    // Enhanced CurrentStorySet handler with more debugging
-    connection.on('CurrentStorySet', handleCurrentStorySet);
-
-    // Listen for any potential alternative event names
-    connection.on('StorySelected', (storyDto: any) => {
-      console.log('🎯 SignalR: StorySelected event received (alternative):', storyDto);
-      // Call the handler directly instead of using emit
-      handleCurrentStorySet(storyDto);
-    });
-
-    connection.on('VotingStarted', (storyDto: any) => {
-      console.log('🎯 SignalR: VotingStarted event received (alternative):', storyDto);
-      // Call the handler directly instead of using emit
-      handleCurrentStorySet(storyDto);
-    });
-
-    // Add additional potential event names that might be used
-    const alternativeEventNames = [
-      'StorySetForVoting', 'StoryActivated', 'ActiveStoryChanged', 'GameStateChanged'
+    // Lista completa de possíveis eventos que o backend pode enviar
+    const allPossibleEventNames = [
+      'CurrentStorySet',
+      'StorySelected', 
+      'StorySetForVoting',
+      'VotingStarted',
+      'StoryActivated',
+      'ActiveStoryChanged',
+      'GameStateChanged',
+      'RoomStateChanged',
+      'StorySelectionChanged',
+      'CurrentStoryChanged',
+      'PlanningStarted'
     ];
 
-    alternativeEventNames.forEach(eventName => {
-      connection.on(eventName, (...args: any[]) => {
-        console.log(`🎯 SignalR: Alternative event '${eventName}' received:`, args);
-        // If it looks like a story selection event, handle it
-        if (args.length > 0 && args[0] && typeof args[0] === 'object' && args[0].id) {
+    // Registra handlers para todos os possíveis eventos
+    allPossibleEventNames.forEach(eventName => {
+      connection.on(eventName, (data: any) => {
+        console.log(`🎯🎯🎯 SignalR: Event '${eventName}' received with data:`, data);
+        
+        // Se parece com dados de uma história, trata como seleção de história
+        if (data && typeof data === 'object' && (data.id || data.storyId)) {
           console.log(`🎯 SignalR: Treating '${eventName}' as story selection event`);
-          handleCurrentStorySet(args[0]);
+          handleCurrentStorySet(data.story || data);
         }
       });
     });
     
     // Log all registered events
-    console.log('🎯 SignalR: Story events registered. Listening for:');
-    console.log('  - StoriesInitialized');
-    console.log('  - StoryAdded'); 
-    console.log('  - StoryUpdated');
-    console.log('  - StoryDeleted');
-    console.log('  - CurrentStorySet ⭐');
-    console.log('  - StorySelected (alternative)');
-    console.log('  - VotingStarted (alternative)');
-    console.log('  - Alternative events:', alternativeEventNames.join(', '));
+    console.log('🎯🎯🎯 SignalR: Story events registered. Listening for ALL possible events:');
+    allPossibleEventNames.forEach(name => console.log(`  - ${name}`));
     console.log('🎯 SignalR: Connection state:', connection.state);
     console.log('🎯 SignalR: Connection ID:', connection.connectionId);
     

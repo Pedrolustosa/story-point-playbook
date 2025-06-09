@@ -1,12 +1,21 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { FileText, Award } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
 
 export const StoryPanel: React.FC = () => {
   const { gameState } = useGame();
 
+  // Log para debug do estado atual
+  useEffect(() => {
+    console.log('📋 StoryPanel: Current story state changed:');
+    console.log('📋 StoryPanel: currentStory:', gameState.currentStory);
+    console.log('📋 StoryPanel: votingInProgress:', gameState.votingInProgress);
+    console.log('📋 StoryPanel: votesRevealed:', gameState.votesRevealed);
+  }, [gameState.currentStory, gameState.votingInProgress, gameState.votesRevealed]);
+
   if (!gameState.currentStory) {
+    console.log('📋 StoryPanel: Rendering empty state - no current story');
     return (
       <div className="bg-white rounded-xl shadow-lg p-6 text-center">
         <div className="text-gray-400 mb-4">
@@ -22,6 +31,8 @@ export const StoryPanel: React.FC = () => {
       </div>
     );
   }
+
+  console.log('📋 StoryPanel: Rendering story panel for:', gameState.currentStory.title);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGame } from '../../contexts/GameContext';
 
 export const VotingCards: React.FC = () => {
@@ -11,7 +11,18 @@ export const VotingCards: React.FC = () => {
                   !gameState.votesRevealed && 
                   !gameState.currentUser?.isProductOwner;
 
+  // Log para debug das condições de votação
+  useEffect(() => {
+    console.log('🃏 VotingCards: State update:');
+    console.log('🃏 VotingCards: currentStory:', gameState.currentStory?.title || 'none');
+    console.log('🃏 VotingCards: votingInProgress:', gameState.votingInProgress);
+    console.log('🃏 VotingCards: votesRevealed:', gameState.votesRevealed);
+    console.log('🃏 VotingCards: currentUser.isProductOwner:', gameState.currentUser?.isProductOwner);
+    console.log('🃏 VotingCards: canVote:', canVote);
+  }, [gameState.currentStory, gameState.votingInProgress, gameState.votesRevealed, gameState.currentUser?.isProductOwner, canVote]);
+
   if (!gameState.currentStory) {
+    console.log('🃏 VotingCards: Rendering wait state - no current story');
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <div className="text-gray-400 mb-4">
@@ -26,6 +37,7 @@ export const VotingCards: React.FC = () => {
   }
 
   if (gameState.currentUser?.isProductOwner) {
+    console.log('🃏 VotingCards: Rendering PO view');
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <div className="text-blue-400 mb-4">
@@ -40,6 +52,7 @@ export const VotingCards: React.FC = () => {
   }
 
   if (!canVote && !gameState.votesRevealed) {
+    console.log('🃏 VotingCards: Rendering voting closed state');
     return (
       <div className="bg-white rounded-xl shadow-lg p-8 text-center">
         <div className="text-gray-400 mb-4">
@@ -52,6 +65,9 @@ export const VotingCards: React.FC = () => {
       </div>
     );
   }
+
+  console.log('🃏 VotingCards: Rendering voting cards');
+  console.log('🃏 VotingCards: Available cards:', gameState.fibonacciCards);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">

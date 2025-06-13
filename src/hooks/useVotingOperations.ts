@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { ApiService } from '../services/api';
 import { GameState } from '../types/game';
 import { useErrorHandler } from './useErrorHandler';
@@ -9,9 +9,28 @@ export const useVotingOperations = (
   setGameState: React.Dispatch<React.SetStateAction<GameState>>
 ) => {
   const { handleError, handleApiResponse } = useErrorHandler();
+  
+  // Refs para controle de debounce
+  const castVoteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastVoteTimeRef = useRef<number>(0);
 
   const castVote = useCallback(async (vote: number | string) => {
     if (!gameState.currentUser || gameState.currentUser.isProductOwner || !gameState.currentStory) return;
+
+    // Debounce para evitar múltiplos votos muito rápidos
+    const now = Date.now();
+    if (now - lastVoteTimeRef.current < 1000) {
+      console.log('🗳️ Voto ignorado - muito cedo para novo voto');
+      return;
+    }
+
+    // Verificar se já tem voto pendente
+    if (castVoteTimeoutRef.current) {
+      console.log('🗳️ Voto ignorado - já existe voto pendente');
+      return;
+    }
+
+    lastVoteTimeRef.current = now;
 
     console.log('🗳️🗳️🗳️ CASTING VOTE - START');
     console.log('🗳️ Vote value:', vote);
@@ -67,9 +86,19 @@ export const useVotingOperations = (
         };
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.log('🗳️ ERROR casting vote:', error);
-      handleError(error);
+      
+      // Para erro 429, não mostrar erro crítico
+      if (error?.status !== 429) {
+        handleError(error);
+      }
+    } finally {
+      // Limpar timeout de debounce
+      if (castVoteTimeoutRef.current) {
+        clearTimeout(castVoteTimeoutRef.current);
+        castVoteTimeoutRef.current = null;
+      }
     }
   }, [gameState.currentUser, gameState.currentStory, setGameState, handleError, handleApiResponse]);
 
@@ -89,9 +118,11 @@ export const useVotingOperations = (
 
       console.log('🗳️ Votes reveal request sent, waiting for SignalR update');
 
-    } catch (error) {
+    } catch (error: any) {
       console.log('🗳️ Error revealing votes:', error);
-      handleError(error);
+      if (error?.status !== 429) {
+        handleError(error);
+      }
     }
 
     // Mantém o countdown local para feedback visual

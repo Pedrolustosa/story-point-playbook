@@ -42,6 +42,10 @@ export const useErrorHandler = () => {
         case 404:
           errorMessage = 'Recurso não encontrado.';
           break;
+        case 429:
+          errorMessage = 'Muitas requisições. Aguarde um momento antes de tentar novamente.';
+          shouldStopProcess = false; // Para 429, não precisamos parar o processo
+          break;
         case 500:
           errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
           break;
@@ -53,14 +57,22 @@ export const useErrorHandler = () => {
       errorCode = 'JSON_PARSE_ERROR';
     }
     
-    toast.error(errorMessage, {
-      duration: 6000,
+    // Para erros 429, usar toast de warning ao invés de error
+    const toastFunction = error?.status === 429 ? toast.warning : toast.error;
+    const iconColor = error?.status === 429 ? 'text-yellow-500' : 'text-red-500';
+    const borderColor = error?.status === 429 ? '#eab308' : '#ef4444';
+    const borderClass = error?.status === 429 ? 'border-l-yellow-500' : 'border-l-red-500';
+    
+    toastFunction(errorMessage, {
+      duration: error?.status === 429 ? 3000 : 6000, // Duração menor para 429
       description: errorCode ? `Código: ${errorCode}` : undefined,
-      icon: <XCircle className="h-5 w-5 text-red-500" />,
+      icon: error?.status === 429 
+        ? <AlertTriangle className={`h-5 w-5 ${iconColor}`} />
+        : <XCircle className={`h-5 w-5 ${iconColor}`} />,
       style: {
-        borderLeft: '4px solid #ef4444',
+        borderLeft: `4px solid ${borderColor}`,
       },
-      className: 'border-l-red-500',
+      className: borderClass,
     });
     
     const appError: AppError = {

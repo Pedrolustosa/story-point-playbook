@@ -1,6 +1,5 @@
-
 import { httpClient } from './httpClient';
-import { AddStoryCommand, StoryDto, SubmitVoteCommand, VoteResultDto } from './types';
+import { AddStoryCommand, StoryDto, SubmitVoteCommand, VoteResultDto, VotingStatusDto } from './types';
 
 export class StoryService {
   static async createStory(roomId: string, data: Omit<AddStoryCommand, 'roomId'>) {
@@ -30,5 +29,9 @@ export class StoryService {
 
   static async deleteStory(roomCode: string, storyId: string) {
     return httpClient.delete(`/rooms/${roomCode}/stories/${storyId}`);
+  }
+
+  static async getVotingStatus(roomId: string, storyId: string) {
+    return httpClient.get<VotingStatusDto[]>(`/rooms/${roomId}/stories/${storyId}/voting-status`);
   }
 }

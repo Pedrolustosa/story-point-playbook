@@ -121,3 +121,9 @@ export interface VoteResultDto {
   value: string;
   isRevealed: boolean;
 }
+
+export interface VotingStatusDto {
+  userId: string;
+  displayName: string;
+  hasVoted: boolean;
+}

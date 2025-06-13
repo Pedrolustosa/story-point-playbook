@@ -2,39 +2,48 @@
 import React from 'react';
 import { Eye, RotateCcw } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
+import { useVotingStatus } from '../../hooks/useVotingStatus';
 
 export const ProductOwnerControls: React.FC = () => {
   const { gameState, revealVotes, resetVoting } = useGame();
+  
+  // Usa o hook para buscar status de votação em tempo real
+  const { votingStatus, isLoading } = useVotingStatus(
+    gameState.roomId,
+    gameState.currentStory?.id || null,
+    gameState.votingInProgress
+  );
 
   const isProductOwner = gameState.currentUser?.isProductOwner;
+  
+  // Combina dados locais com dados da API para melhor experiência
   const votingUsers = gameState.users.filter(u => !u.isProductOwner);
-  const votedUsers = votingUsers.filter(u => u.hasVoted);
-  const allVotingUsersVoted = votingUsers.length > 0 && votingUsers.every(u => u.hasVoted);
+  const statusMap = new Map(votingStatus.map(s => [s.userId, s]));
+  
+  // Mescla status local com status da API
+  const usersWithStatus = votingUsers.map(user => {
+    const apiStatus = statusMap.get(user.id);
+    return {
+      ...user,
+      hasVoted: apiStatus?.hasVoted ?? user.hasVoted,
+      displayName: apiStatus?.displayName ?? user.name
+    };
+  });
+  
+  const votedUsers = usersWithStatus.filter(u => u.hasVoted);
+  const allVotingUsersVoted = usersWithStatus.length > 0 && usersWithStatus.every(u => u.hasVoted);
 
   console.log('🎛️🎛️🎛️ ProductOwnerControls render:');
   console.log('🎛️ isProductOwner:', isProductOwner);
-  console.log('🎛️ All users:', gameState.users.map(u => ({ 
+  console.log('🎛️ API voting status:', votingStatus);
+  console.log('🎛️ Users with merged status:', usersWithStatus.map(u => ({ 
     id: u.id, 
     name: u.name, 
-    isProductOwner: u.isProductOwner, 
-    hasVoted: u.hasVoted, 
-    vote: u.vote 
-  })));
-  console.log('🎛️ Voting users (não PO):', votingUsers.map(u => ({ 
-    id: u.id, 
-    name: u.name, 
-    hasVoted: u.hasVoted, 
-    vote: u.vote 
-  })));
-  console.log('🎛️ Users who voted:', votedUsers.map(u => ({ 
-    id: u.id, 
-    name: u.name, 
-    vote: u.vote 
+    hasVoted: u.hasVoted
   })));
   console.log('🎛️ allVotingUsersVoted:', allVotingUsersVoted);
   console.log('🎛️ votingInProgress:', gameState.votingInProgress);
   console.log('🎛️ votesRevealed:', gameState.votesRevealed);
-  console.log('🎛️ currentStory:', gameState.currentStory?.title || 'none');
 
   if (!isProductOwner || !gameState.currentStory) {
     return null;
@@ -55,7 +64,7 @@ export const ProductOwnerControls: React.FC = () => {
               ? `Revelando em ${gameState.revealCountdown}...` 
               : allVotingUsersVoted 
                 ? 'Revelar Votos' 
-                : `Aguardando votos (${votedUsers.length}/${votingUsers.length})`
+                : `Aguardando votos (${votedUsers.length}/${usersWithStatus.length})`
             }
           </button>
         ) : (
@@ -68,16 +77,21 @@ export const ProductOwnerControls: React.FC = () => {
           </button>
         )}
         
-        {/* Status detalhado dos votos */}
-        {gameState.votingInProgress && !gameState.votesRevealed && (
+        {/* Status detalhado dos votos com dados em tempo real */}
+        {gameState.votingInProgress && !gameState.votesRevealed && usersWithStatus.length > 0 && (
           <div className="text-sm text-gray-600 text-center">
-            <p>Participantes que votaram:</p>
+            <div className="flex items-center justify-between mb-2">
+              <span>Participantes que votaram:</span>
+              {isLoading && (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              )}
+            </div>
             <div className="mt-2 space-y-1">
-              {votingUsers.map(user => (
+              {usersWithStatus.map(user => (
                 <div key={user.id} className="flex justify-between">
-                  <span>{user.name}</span>
+                  <span>{user.displayName || user.name}</span>
                   <span className={user.hasVoted ? 'text-green-600' : 'text-orange-600'}>
-                    {user.hasVoted ? `✓ Votou (${user.vote})` : '⏳ Aguardando'}
+                    {user.hasVoted ? '✓ Votou' : '⏳ Aguardando'}
                   </span>
                 </div>
               ))}

@@ -1,6 +1,6 @@
 
 import { httpClient } from './httpClient';
-import { AddStoryCommand, StoryDto, SubmitVoteCommand } from './types';
+import { AddStoryCommand, StoryDto, SubmitVoteCommand, VoteResultDto } from './types';
 
 export class StoryService {
   static async createStory(roomId: string, data: Omit<AddStoryCommand, 'roomId'>) {
@@ -22,6 +22,10 @@ export class StoryService {
 
   static async revealVotes(storyId: string) {
     return httpClient.post(`/stories/${storyId}/reveal`);
+  }
+
+  static async getRevealedVotes(roomId: string, storyId: string) {
+    return httpClient.get<VoteResultDto[]>(`/rooms/${roomId}/stories/${storyId}/votes`);
   }
 
   static async deleteStory(roomCode: string, storyId: string) {

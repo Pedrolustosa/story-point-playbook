@@ -1,4 +1,3 @@
-
 // DTOs que correspondem aos modelos da API .NET
 export interface CreateRoomCommand {
   name: string;
@@ -115,4 +114,10 @@ export interface VoteDto {
   storyId: string;
   value: number | string;
   createdAt: string;
+}
+
+export interface VoteResultDto {
+  userName: string;
+  value: string;
+  isRevealed: boolean;
 }

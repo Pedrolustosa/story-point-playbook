@@ -2,13 +2,24 @@
 import React from 'react';
 import { BarChart3, TrendingUp } from 'lucide-react';
 import { useGame } from '../../contexts/GameContext';
+import { useRevealedVotes } from '../../hooks/useRevealedVotes';
 
 export const Results: React.FC = () => {
   const { gameState } = useGame();
+  
+  // Busca os votos revelados da API quando os votos estão revelados
+  const { revealedVotes, isLoading } = useRevealedVotes(
+    gameState.roomId, 
+    gameState.currentStory?.id || null, 
+    gameState.votesRevealed
+  );
 
-  const votes = gameState.users
-    .filter(u => u.vote !== undefined)
-    .map(u => u.vote);
+  // Se os votos foram revelados, usa os dados da API, senão usa os dados locais
+  const votes = gameState.votesRevealed && revealedVotes.length > 0
+    ? revealedVotes.map(v => v.value)
+    : gameState.users
+        .filter(u => u.vote !== undefined)
+        .map(u => u.vote);
 
   // Verificar se há votos antes de processar
   if (votes.length === 0) {
@@ -19,8 +30,14 @@ export const Results: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900">Resultados</h3>
         </div>
         <div className="text-center text-gray-500 py-8">
-          <p>Nenhum voto registrado ainda.</p>
-          <p className="text-sm">Os resultados aparecerão aqui após a votação.</p>
+          {isLoading ? (
+            <p>Carregando votos...</p>
+          ) : (
+            <>
+              <p>Nenhum voto registrado ainda.</p>
+              <p className="text-sm">Os resultados aparecerão aqui após a votação.</p>
+            </>
+          )}
         </div>
       </div>
     );
@@ -32,9 +49,10 @@ export const Results: React.FC = () => {
     return acc;
   }, {} as Record<string, number>);
 
-  const numericVotes = votes.filter(v => typeof v === 'number') as number[];
-  const average = numericVotes.length > 0 
-    ? (numericVotes.reduce((sum, vote) => sum + vote, 0) / numericVotes.length).toFixed(1)
+  const numericVotes = votes.filter(v => typeof v === 'number' || !isNaN(Number(v))) as (number | string)[];
+  const numericValues = numericVotes.map(v => Number(v)).filter(v => !isNaN(v));
+  const average = numericValues.length > 0 
+    ? (numericValues.reduce((sum, vote) => sum + vote, 0) / numericValues.length).toFixed(1)
     : null;
 
   // Verificar se há grupos de votos antes de fazer reduce
@@ -51,6 +69,11 @@ export const Results: React.FC = () => {
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-5 h-5 text-blue-600" />
         <h3 className="text-lg font-semibold text-gray-900">Resultados</h3>
+        {isLoading && (
+          <div className="ml-auto">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          </div>
+        )}
       </div>
 
       {/* Consensus Indicator */}
@@ -93,6 +116,21 @@ export const Results: React.FC = () => {
             </div>
           ))}
       </div>
+
+      {/* Revealed Votes Details */}
+      {gameState.votesRevealed && revealedVotes.length > 0 && (
+        <div className="border-t pt-4 mb-4">
+          <h4 className="text-sm font-semibold text-gray-700 mb-2">Votos por usuário:</h4>
+          <div className="space-y-1">
+            {revealedVotes.map((vote, index) => (
+              <div key={index} className="flex justify-between text-sm">
+                <span className="text-gray-600">{vote.userName}:</span>
+                <span className="font-medium">{vote.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Statistics */}
       <div className="border-t pt-4 space-y-2 text-sm">

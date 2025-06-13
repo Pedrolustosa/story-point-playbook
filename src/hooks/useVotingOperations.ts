@@ -13,37 +13,62 @@ export const useVotingOperations = (
   const castVote = useCallback(async (vote: number | string) => {
     if (!gameState.currentUser || gameState.currentUser.isProductOwner || !gameState.currentStory) return;
 
-    console.log('🗳️ Casting vote:', vote, 'for user:', gameState.currentUser.id);
+    console.log('🗳️🗳️🗳️ CASTING VOTE - START');
+    console.log('🗳️ Vote value:', vote);
+    console.log('🗳️ User ID:', gameState.currentUser.id);
+    console.log('🗳️ User name:', gameState.currentUser.name);
+    console.log('🗳️ Story ID:', gameState.currentStory.id);
+    console.log('🗳️ Story title:', gameState.currentStory.title);
 
     try {
-      const response = await ApiService.stories.submitVote({
+      const voteCommand = {
         storyId: gameState.currentStory.id,
         userId: gameState.currentUser.id,
         value: vote.toString(),
-      });
+      };
+      
+      console.log('🗳️ Sending vote command to API:', voteCommand);
+      
+      const response = await ApiService.stories.submitVote(voteCommand);
+      
+      console.log('🗳️ API response received:', response);
 
-      // Só procede se a API retornar sucesso
       const isSuccess = handleApiResponse(response);
       if (!isSuccess) {
-        console.log('🗳️ Vote submission failed');
+        console.log('🗳️ Vote submission failed - API returned error');
         return;
       }
 
-      console.log('🗳️ Vote submitted successfully, waiting for SignalR update');
+      console.log('🗳️🗳️🗳️ VOTE SUBMITTED SUCCESSFULLY TO API!');
+      console.log('🗳️ Now waiting for SignalR VoteSubmitted event to update UI...');
       
       // Atualização temporária local para feedback imediato
       // O SignalR vai sobrescrever isso quando receber o evento
-      setGameState(prev => ({
-        ...prev,
-        users: prev.users.map(p =>
+      setGameState(prev => {
+        console.log('🗳️ Applying temporary local vote update');
+        console.log('🗳️ Previous user state:', prev.users.find(u => u.id === prev.currentUser?.id));
+        
+        const updatedUsers = prev.users.map(p =>
           p.id === prev.currentUser?.id
             ? { ...p, hasVoted: true, vote }
             : p
-        ),
-      }));
+        );
+        
+        console.log('🗳️ Updated users after local update:', updatedUsers.map(u => ({ 
+          id: u.id, 
+          name: u.name, 
+          hasVoted: u.hasVoted, 
+          vote: u.vote 
+        })));
+        
+        return {
+          ...prev,
+          users: updatedUsers,
+        };
+      });
 
     } catch (error) {
-      console.log('🗳️ Error casting vote:', error);
+      console.log('🗳️ ERROR casting vote:', error);
       handleError(error);
     }
   }, [gameState.currentUser, gameState.currentStory, setGameState, handleError, handleApiResponse]);
@@ -56,7 +81,6 @@ export const useVotingOperations = (
     try {
       const response = await ApiService.stories.revealVotes(gameState.currentStory.id);
       
-      // Só procede se a API retornar sucesso
       const isSuccess = handleApiResponse(response);
       if (!isSuccess) {
         console.log('🗳️ Reveal votes failed');

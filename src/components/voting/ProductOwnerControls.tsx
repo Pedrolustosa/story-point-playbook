@@ -11,14 +11,30 @@ export const ProductOwnerControls: React.FC = () => {
   const votedUsers = votingUsers.filter(u => u.hasVoted);
   const allVotingUsersVoted = votingUsers.length > 0 && votingUsers.every(u => u.hasVoted);
 
-  console.log('🎛️ ProductOwnerControls render:', {
-    isProductOwner,
-    votingUsers: votingUsers.length,
-    votedUsers: votedUsers.length,
-    allVotingUsersVoted,
-    votingInProgress: gameState.votingInProgress,
-    votesRevealed: gameState.votesRevealed
-  });
+  console.log('🎛️🎛️🎛️ ProductOwnerControls render:');
+  console.log('🎛️ isProductOwner:', isProductOwner);
+  console.log('🎛️ All users:', gameState.users.map(u => ({ 
+    id: u.id, 
+    name: u.name, 
+    isProductOwner: u.isProductOwner, 
+    hasVoted: u.hasVoted, 
+    vote: u.vote 
+  })));
+  console.log('🎛️ Voting users (não PO):', votingUsers.map(u => ({ 
+    id: u.id, 
+    name: u.name, 
+    hasVoted: u.hasVoted, 
+    vote: u.vote 
+  })));
+  console.log('🎛️ Users who voted:', votedUsers.map(u => ({ 
+    id: u.id, 
+    name: u.name, 
+    vote: u.vote 
+  })));
+  console.log('🎛️ allVotingUsersVoted:', allVotingUsersVoted);
+  console.log('🎛️ votingInProgress:', gameState.votingInProgress);
+  console.log('🎛️ votesRevealed:', gameState.votesRevealed);
+  console.log('🎛️ currentStory:', gameState.currentStory?.title || 'none');
 
   if (!isProductOwner || !gameState.currentStory) {
     return null;
@@ -61,7 +77,7 @@ export const ProductOwnerControls: React.FC = () => {
                 <div key={user.id} className="flex justify-between">
                   <span>{user.name}</span>
                   <span className={user.hasVoted ? 'text-green-600' : 'text-orange-600'}>
-                    {user.hasVoted ? '✓ Votou' : '⏳ Aguardando'}
+                    {user.hasVoted ? `✓ Votou (${user.vote})` : '⏳ Aguardando'}
                   </span>
                 </div>
               ))}

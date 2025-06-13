@@ -8,7 +8,17 @@ export const ProductOwnerControls: React.FC = () => {
 
   const isProductOwner = gameState.currentUser?.isProductOwner;
   const votingUsers = gameState.users.filter(u => !u.isProductOwner);
+  const votedUsers = votingUsers.filter(u => u.hasVoted);
   const allVotingUsersVoted = votingUsers.length > 0 && votingUsers.every(u => u.hasVoted);
+
+  console.log('🎛️ ProductOwnerControls render:', {
+    isProductOwner,
+    votingUsers: votingUsers.length,
+    votedUsers: votedUsers.length,
+    allVotingUsersVoted,
+    votingInProgress: gameState.votingInProgress,
+    votesRevealed: gameState.votesRevealed
+  });
 
   if (!isProductOwner || !gameState.currentStory) {
     return null;
@@ -26,10 +36,10 @@ export const ProductOwnerControls: React.FC = () => {
           >
             <Eye className="w-4 h-4" />
             {gameState.revealCountdown !== null 
-              ? 'Revelando...' 
+              ? `Revelando em ${gameState.revealCountdown}...` 
               : allVotingUsersVoted 
                 ? 'Revelar Votos' 
-                : `Aguardando votos (${votingUsers.filter(u => u.hasVoted).length}/${votingUsers.length})`
+                : `Aguardando votos (${votedUsers.length}/${votingUsers.length})`
             }
           </button>
         ) : (
@@ -40,6 +50,23 @@ export const ProductOwnerControls: React.FC = () => {
             <RotateCcw className="w-4 h-4" />
             Nova Votação
           </button>
+        )}
+        
+        {/* Status detalhado dos votos */}
+        {gameState.votingInProgress && !gameState.votesRevealed && (
+          <div className="text-sm text-gray-600 text-center">
+            <p>Participantes que votaram:</p>
+            <div className="mt-2 space-y-1">
+              {votingUsers.map(user => (
+                <div key={user.id} className="flex justify-between">
+                  <span>{user.name}</span>
+                  <span className={user.hasVoted ? 'text-green-600' : 'text-orange-600'}>
+                    {user.hasVoted ? '✓ Votou' : '⏳ Aguardando'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

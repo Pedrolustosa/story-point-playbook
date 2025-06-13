@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react';
 import { HubConnection } from '@microsoft/signalr';
 import { GameState, Story } from '../types/game';
@@ -78,6 +77,53 @@ export const useSignalRStoryEvents = (
         ...prev,
         stories: prev.stories.filter(story => story.id !== storyId),
         currentStory: prev.currentStory?.id === storyId ? null : prev.currentStory,
+      }));
+    });
+
+    // Eventos de votação em tempo real
+    connection.on('VoteSubmitted', (voteData: any) => {
+      console.log('🗳️ SignalR: Vote submitted event received:', voteData);
+      
+      setGameState(prev => ({
+        ...prev,
+        users: prev.users.map(user => 
+          user.id === voteData.userId 
+            ? { ...user, hasVoted: true, vote: voteData.value }
+            : user
+        ),
+      }));
+    });
+
+    connection.on('VotingStatusChanged', (statusData: any) => {
+      console.log('🗳️ SignalR: Voting status changed:', statusData);
+      
+      setGameState(prev => ({
+        ...prev,
+        votingInProgress: statusData.votingInProgress,
+        votesRevealed: statusData.votesRevealed,
+      }));
+    });
+
+    connection.on('VotesRevealed', (revealData: any) => {
+      console.log('🗳️ SignalR: Votes revealed event received:', revealData);
+      
+      setGameState(prev => ({
+        ...prev,
+        votesRevealed: true,
+        votingInProgress: false,
+        revealCountdown: null,
+      }));
+    });
+
+    connection.on('VotingReset', () => {
+      console.log('🗳️ SignalR: Voting reset event received');
+      
+      setGameState(prev => ({
+        ...prev,
+        votingInProgress: true,
+        votesRevealed: false,
+        revealCountdown: null,
+        users: prev.users.map(p => ({ ...p, hasVoted: false, vote: undefined })),
       }));
     });
 

@@ -10,7 +10,7 @@ import { LandingTestimonialsSection } from './sections/LandingTestimonialsSectio
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen font-sans flex flex-col bg-gradient-to-br from-orange-50 via-amber-50 to-white">
+    <div className="min-h-screen font-sans flex flex-col bg-gradient-to-br from-orange-50 via-amber-50 to-white scroll-smooth">
       <Navbar />
       <main className="flex-1">
         <LandingHeroSection />

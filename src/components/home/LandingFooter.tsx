@@ -6,7 +6,7 @@ export const LandingFooter: React.FC = () => {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-4 gap-12 md:gap-8">
           {/* Logo e Descrição */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
@@ -20,13 +20,25 @@ export const LandingFooter: React.FC = () => {
               planning poker em experiências colaborativas e precisas.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors">
+              <a
+                href="#"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:scale-110 hover:bg-gray-700 transition-transform duration-200"
+                aria-label="Github"
+              >
                 <Github className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors">
+              <a
+                href="#"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:scale-110 hover:bg-gray-700 transition-transform duration-200"
+                aria-label="Twitter"
+              >
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-gray-700 transition-colors">
+              <a
+                href="#"
+                className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:scale-110 hover:bg-gray-700 transition-transform duration-200"
+                aria-label="Linkedin"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>
@@ -36,10 +48,10 @@ export const LandingFooter: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Produto</h3>
             <ul className="space-y-2">
-              <li><a href="#features" className="text-gray-400 hover:text-white transition-colors">Recursos</a></li>
-              <li><a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">Como Funciona</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Preços</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Integrações</a></li>
+              <li><a href="#features" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Recursos</a></li>
+              <li><a href="#how-it-works" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Como Funciona</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Preços</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Integrações</a></li>
             </ul>
           </div>
           
@@ -47,11 +59,11 @@ export const LandingFooter: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Suporte</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Central de Ajuda</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Documentação</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Status</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Central de Ajuda</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Documentação</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition">Status</a></li>
               <li>
-                <a href="mailto:suporte@planningpoker.com" className="text-gray-400 hover:text-white transition-colors flex items-center">
+                <a href="mailto:suporte@planningpoker.com" className="text-gray-400 hover:text-white hover:underline rounded focus-visible:ring-2 focus-visible:ring-orange-400 transition flex items-center">
                   <Mail className="w-4 h-4 mr-2" />
                   Contato
                 </a>
@@ -61,7 +73,7 @@ export const LandingFooter: React.FC = () => {
         </div>
         
         <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-          <p className="text-gray-400">
+          <p className="text-gray-400 text-sm">
             © 2024 Planning Poker. Desenvolvido para equipes ágeis que valorizam colaboração e precisão.
           </p>
         </div>

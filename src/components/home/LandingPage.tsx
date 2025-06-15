@@ -10,20 +10,21 @@ import { LandingFooter } from './LandingFooter';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen font-sans flex flex-col bg-gradient-to-br from-orange-50 via-amber-50 to-white">
+      {/* Navbar sempre sticky */}
       <Navbar />
-      
-      <main>
+
+      <main className="flex-1">
         {/* Hero Section */}
-        <section className="pt-20 pb-16 bg-gradient-to-br from-green-50 via-orange-50 to-amber-50">
-          <div className="container mx-auto px-4 py-16">
+        <section className="relative pt-20 pb-16 animate-fade-in bg-gradient-to-br from-green-50 via-orange-50 to-amber-50">
+          <div className="container mx-auto max-w-5xl px-4 py-16 lg:py-24">
             <HeroSection />
           </div>
         </section>
-        
+
         {/* Features Section */}
-        <section id="features" className="py-20 bg-white">
-          <div className="container mx-auto px-4">
+        <section id="features" className="py-20 bg-white animate-fade-in">
+          <div className="container mx-auto max-w-5xl px-4">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Recursos Poderosos
@@ -37,15 +38,21 @@ export const LandingPage: React.FC = () => {
         </section>
         
         {/* Stats Section */}
-        <StatsSection />
-        
+        <div className="bg-amber-50">
+          <StatsSection />
+        </div>
+
         {/* How It Works Section */}
-        <HowItWorksSection />
+        <div className="bg-white">
+          <HowItWorksSection />
+        </div>
         
         {/* Testimonials Section */}
-        <TestimonialsSection />
+        <section className="bg-gradient-to-tl from-orange-50 via-white to-green-50 py-16 animate-fade-in">
+          <TestimonialsSection />
+        </section>
       </main>
-      
+
       <LandingFooter />
     </div>
   );

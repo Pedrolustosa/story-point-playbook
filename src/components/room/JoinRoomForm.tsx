@@ -4,6 +4,7 @@ import { ArrowRight, ArrowLeft, XCircle } from "lucide-react";
 import { useGame } from "../../contexts/GameContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+/* TODO: Refatorar subseções do form em componentes separados para facilitar manutenção */
 import { PasteButton } from "../ui/PasteButton";
 import { FormHint } from "../ui/FormHint";
 import { CardContent } from "../ui/card";
@@ -96,10 +97,11 @@ export const JoinRoomForm: React.FC = () => {
   }
 
   return (
-    <CardContent className="space-y-6 p-6">
+    <CardContent className="space-y-6 p-2 md:p-6">
       <div className="flex flex-col gap-3">
+        {/* Campo do código da sala */}
         <div>
-          <label htmlFor="room-code" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="room-code" className="block text-base md:text-sm font-semibold text-gray-700 mb-1">
             Código da sala <span className="text-xs text-gray-400 align-top">(6 dígitos)</span>
           </label>
           <div className="flex gap-1 items-center">
@@ -115,8 +117,7 @@ export const JoinRoomForm: React.FC = () => {
               value={roomCode}
               onChange={handleRoomCodeChange}
               maxLength={6}
-              className={
-                "uppercase text-center tracking-widest border font-mono text-lg px-4 py-3 rounded-lg transition-all duration-200 w-full shadow-sm bg-amber-50/60 hover:bg-amber-50 focus:bg-white focus:border-orange-400 " +
+              className={"uppercase text-center tracking-widest border font-mono text-lg px-4 py-3 rounded-lg transition-all duration-200 w-full shadow-sm bg-amber-50/60 hover:bg-amber-50 focus:bg-white focus:border-orange-400 " +
                 (error.roomCode
                   ? "border-red-400 ring-2 ring-red-300"
                   : "focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -139,9 +140,9 @@ export const JoinRoomForm: React.FC = () => {
             </div>
           )}
         </div>
-
+        {/* Campo do nome */}
         <div>
-          <label htmlFor="player-name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="player-name" className="block text-base md:text-sm font-semibold text-gray-700 mb-1">
             Seu nome
           </label>
           <Input
@@ -183,10 +184,12 @@ export const JoinRoomForm: React.FC = () => {
           </div>
         )}
       </div>
+      {/* Ações */}
       <div className="flex gap-2 pt-1 items-center">
         <Button
           onClick={handleBack}
           variant="outline"
+          size="lg"
           className="flex-1 animate-fade-in"
           disabled={isJoining}
           tabIndex={3}
@@ -203,12 +206,9 @@ export const JoinRoomForm: React.FC = () => {
             isJoining ||
             (!!error.roomCode || !!error.playerName)
           }
-          className={
-            "flex-1 bg-gradient-to-r from-green-600 to-orange-600 hover:from-green-700 hover:to-orange-700 text-white font-bold shadow-md animate-scale-in transition-all " +
-            (isJoining ? "opacity-80 cursor-not-allowed" : "")
-          }
-          tabIndex={4}
           size="lg"
+          className="flex-1"
+          tabIndex={4}
           type="button"
         >
           <ArrowRight className="w-4 h-4 mr-2" />
@@ -225,3 +225,8 @@ export const JoinRoomForm: React.FC = () => {
     </CardContent>
   );
 };
+
+/* 
+AVISO: Este componente tem mais de 200 linhas! 
+Sugestão: Quebre este formulário em subcomponentes como <RoomCodeInput />, <PlayerNameInput /> e <FormError /> para facilitar manutenção/melhoria futura.
+*/

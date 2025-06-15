@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Users, ArrowRight, ArrowLeft, XCircle } from "lucide-react";
 import { useGame } from "../../contexts/GameContext";
@@ -181,16 +180,6 @@ export const JoinRoom: React.FC = () => {
                 </div>
               )}
             </div>
-            {process.env.NODE_ENV === "development" && (
-              <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
-                <div>
-                  GameState: roomCode={gameState.roomCode}, currentUser={gameState.currentUser?.name}
-                </div>
-                <div>
-                  Form: roomCode={roomCode}, playerName={playerName}
-                </div>
-              </div>
-            )}
             <div className="flex gap-2 pt-1 items-center">
               <Button
                 onClick={handleBack}
